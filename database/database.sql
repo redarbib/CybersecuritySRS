@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS cybersecuritySRS;
 USE cybersecuritySRS;
 
-CREATE TABLE Users (
+CREATE TABLE users (
     Id INT PRIMARY KEY AUTO_INCREMENT,
     Username VARCHAR(255) NOT NULL,
     Email VARCHAR(255) NOT NULL UNIQUE,
@@ -9,7 +9,7 @@ CREATE TABLE Users (
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 
-CREATE TABLE Transfers (
+CREATE TABLE transfers (
     Id INT PRIMARY KEY AUTO_INCREMENT,
     UserId INT NOT NULL,
     Title VARCHAR(255),
@@ -17,44 +17,44 @@ CREATE TABLE Transfers (
     Link TEXT,
     ExpiryDate DATE,
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES Users(Id)
+    FOREIGN KEY (UserId) REFERENCES users(Id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 )
 
-CREATE TABLE Files (
+CREATE TABLE files (
     Id INT PRIMARY KEY AUTO_INCREMENT,
     TransferId INT NOT NULL,
     FileSize BIGINT,
     FileName VARCHAR(255),
     FileType VARCHAR(255),
     StorageUrl TEXT,
-    FOREIGN KEY (TransferId) REFERENCES Transfers(Id)
+    FOREIGN KEY (TransferId) REFERENCES transfers(Id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 )
 
-CREATE TABLE ErrorLogs (
+CREATE TABLE errorlogs (
     Id INT PRIMARY KEY AUTO_INCREMENT,
     UserId INT NOT NULL,
     TransferId INT NOT NULL,
     ErrorType VARCHAR(255),
     ErrorMessage TEXT,
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES Users(Id)
+    FOREIGN KEY (UserId) REFERENCES users(Id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    FOREIGN KEY (TransferId) REFERENCES Transfers(Id)
+    FOREIGN KEY (TransferId) REFERENCES transfers(Id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 )
 
-CREATE TABLE Recipients (
+CREATE TABLE recipients (
     Id INT PRIMARY KEY AUTO_INCREMENT,
     TransferId INT NOT NULL,
     Email VARCHAR(255) NOT NULL,
     Downloaded BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (TransferId) REFERENCES Transfers(Id)
+    FOREIGN KEY (TransferId) REFERENCES transfers(Id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 )
