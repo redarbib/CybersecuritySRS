@@ -199,6 +199,30 @@ secure-file-transfer-system/
 - **Integrity Checks:** Upload status verification + checksum validation
 - **Error Logging:** All transfer errors logged and stored in the database
 
+## Status van Functionaliteiten
+
+### Afgeronde functies
+
+De volgende onderdelen van het systeem zijn volledig afgerond en werken correct:
+
+- Uploadfunctie voor bestanden  
+- Downloadfunctie met server-side controle of het bestand bestaat  
+- Bestandsvalidatie  
+  - Alleen toegestane bestandstypes kunnen worden geüpload  
+  - Maximale bestandsgrootte is ingesteld  
+- Basisbeveiliging bij upload en download  
+- Opslaan van bestandsmetadata in de database  
+---
+
+### Nog niet afgerond
+
+De volgende onderdelen zijn nog niet volledig uitgewerkt:
+
+- Login- en registratiesysteem  
+- Dashboard  
+- Uitgebreide logging  
+- Upload naar UploadThing (cloud storage)  
+
 ## Testing
 
 Run tests:
