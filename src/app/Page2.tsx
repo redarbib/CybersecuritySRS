@@ -2,7 +2,6 @@
 import React, { FormEvent, useState } from "react";
 import "./globals.css";
 import Button from "./components/button";
-import FormLanding from "./components/formLanding";
 
 // Define uploadStatus
 type UploadStatus = {
@@ -107,21 +106,67 @@ export default function UploadFilePage() {
     }
   };
 
-  // Refractored the code now in page2.tsx
+  // Return an react page
   return (
-    <div className="flex h-screen gap-4 lg:flex-row">
-      <div className="flex w-1/2">
-        <FormLanding   />
-      </div>
-      <div className="flex w-1/2 justify-center items-center">
-        <div className="text-center">
-          <h1 className="font-extrabold text-6xl text-zinc-900 text-left">
-            <span>Serious Files</span>
-            <br />
-            <span>Secured Transfers</span>
-          </h1>
+    <main className="mx-auto max-w-xl p-6">
+      <Button /> 
+      <h1 className="text-2xl font-semibold mb-4">Bestand uploaden</h1>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <input
+          type="file"
+          name="file"
+          onChange={(event) =>
+            setSelectedFile(event.currentTarget.files?.[0] ?? null)
+          }
+          required
+          className="border rounded p-2"
+        />
+
+        <button
+          type="submit"
+          disabled={isUploading}
+          className="rounded bg-white px-4 py-2 text-zinc-900 disabled:opacity-60"
+        >
+          {isUploading ? "Uploaden..." : "Bestand versturen"}
+        </button>
+      </form>
+
+      {/* Show the status type */}
+      {status && (
+        <p
+          className={`mt-4 text-sm ${
+            status.type === "success" ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          {status.message}
+        </p>
+      )}
+      {protectedLinks && (
+        <div className="mt-6 flex flex-col gap-3 text-sm">
+          <div className="flex items-center gap-2">
+            <a
+              href={protectedLinks.downloadPageUrl}
+              className="inline-block rounded border border-zinc-500 px-4 py-2"
+            >
+              Naar downloadpagina
+            </a>
+            <button
+              type="button"
+              onClick={() =>
+                copyLinkToClipboard(
+                  protectedLinks.downloadPageUrl,
+                  "Downloadpagina",
+                )
+              }
+              className="rounded border border-zinc-500 px-4 py-2"
+            >
+              Kopieer link
+            </button>
+          </div>
+          {copyStatusMessage && <p>{copyStatusMessage}</p>}
         </div>
-      </div>
-    </div>
+      )}
+    </main>
   );
 }
