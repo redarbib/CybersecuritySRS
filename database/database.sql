@@ -7,7 +7,7 @@ CREATE TABLE users (
     Email VARCHAR(255) NOT NULL UNIQUE,
     PasswordHash VARCHAR(255) NOT NULL,
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-)
+);
 
 CREATE TABLE transfers (
     Id INT PRIMARY KEY AUTO_INCREMENT,
@@ -20,7 +20,7 @@ CREATE TABLE transfers (
     FOREIGN KEY (UserId) REFERENCES users(Id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-)
+);
 
 CREATE TABLE files (
     Id INT PRIMARY KEY AUTO_INCREMENT,
@@ -32,7 +32,7 @@ CREATE TABLE files (
     FOREIGN KEY (TransferId) REFERENCES transfers(Id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-)
+);
 
 CREATE TABLE errorlogs (
     Id INT PRIMARY KEY AUTO_INCREMENT,
@@ -47,7 +47,7 @@ CREATE TABLE errorlogs (
     FOREIGN KEY (TransferId) REFERENCES transfers(Id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-)
+);
 
 CREATE TABLE recipients (
     Id INT PRIMARY KEY AUTO_INCREMENT,
@@ -57,4 +57,4 @@ CREATE TABLE recipients (
     FOREIGN KEY (TransferId) REFERENCES transfers(Id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-)
+);
