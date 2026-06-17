@@ -2,7 +2,7 @@
 import React, { FormEvent, useState } from "react";
 import Link from "next/link";
 
-const FormRegister = () => {
+export default function FormRegister(){
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -148,5 +148,3 @@ const FormRegister = () => {
     </form>
   );
 };
-
-export default FormRegister;

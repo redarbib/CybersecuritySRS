@@ -75,9 +75,6 @@ export default function FormReset() {
       >
         Forget password
       </button>
-      <Link href="/login" className="text-sm hover:underline text-center">
-        Know your password? Login
-      </Link>
     </form>
   );
 }

@@ -1,11 +1,9 @@
 import FormLogin from "../components/formLogin";
 
-const LoginPage = () => {
+export default function LoginPage(){
   return (
     <div className="flex justify-center items-center min-h-screen">
       <FormLogin />
     </div>
   );
 };
-
-export default LoginPage;

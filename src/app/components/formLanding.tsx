@@ -7,7 +7,7 @@ type ApiResponse = {
   message?: string;
 };
 
-const FormLanding = () => {
+export default function FormLanding(){
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -162,5 +162,3 @@ const FormLanding = () => {
     </div>
   );
 };
-
-export default FormLanding;

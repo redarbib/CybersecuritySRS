@@ -2,7 +2,7 @@
 import React, { FormEvent, useState } from "react";
 import Link from "next/link";
 
-const FormLogin = () => {
+export default function FormLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +69,6 @@ const FormLogin = () => {
           focus:border-[#4E3D42]
         "
       />
-
       <input
         type="password"
         placeholder="Password"
@@ -93,6 +92,13 @@ const FormLogin = () => {
         "
       />
 
+      <Link
+        href="/forgot-password"
+        className="text-sm text-[#4E3D42] hover:underline text-center"
+      >
+        Forgot password?
+      </Link>
+
       <button
         type="submit"
         className="
@@ -109,12 +115,43 @@ const FormLogin = () => {
       >
         Login
       </button>
+
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-zinc-300" />
+        <span className="text-xs text-zinc-400 uppercase tracking-wide">
+          or
+        </span>
+        <div className="h-px flex-1 bg-zinc-300" />
+      </div>
+
+      <button
+        type="button"
+        className="
+          w-full
+          rounded-lg
+          border border-zinc-300
+          bg-white
+          py-3
+          text-zinc-700
+          font-medium
+          flex items-center justify-center gap-2
+          transition-all duration-200
+          hover:bg-zinc-50
+          active:scale-95
+        "
+      >
+        <img src="/google.png " alt="Google" className="w-5 h-5" />
+        Login with Google
+      </button>
+
       {registeredSuccessfully && (
         <p className="text-sm text-green-600">
           Account created successfully. You can log in now.
         </p>
       )}
+
       {error && <p className="text-sm text-red-500">{error}</p>}
+
       <Link
         href="/register"
         className="text-sm text-[#4E3D42] hover:underline text-center"
@@ -123,6 +160,4 @@ const FormLogin = () => {
       </Link>
     </form>
   );
-};
-
-export default FormLogin;
+}
