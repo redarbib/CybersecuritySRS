@@ -1,7 +1,7 @@
 "use client";
 import React, { FormEvent, useState } from "react";
 import "./globals.css";
-import Button from "./components/button";
+import Button from "./components/ui/button";
 
 // Define uploadStatus
 type UploadStatus = {

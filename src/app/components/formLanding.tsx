@@ -1,11 +1,11 @@
-import Button from "./button";
+import Button from "./ui/button";
 
 const formLanding = () => {
   const inputClass =
     "w-full text-black bg-transparent p-2 m-1 border-b border-black outline-none";
   return (
     <div className="flex min-h-screen items-center">
-      <form className="w-full max-w-xl ml-10 mr-auto p-8 bg-white rounded-lg gap-4">
+      <form className="w-full max-w-xl mr-auto p-8 bg-white rounded-lg">
         <div className="w-full flex flex-col gap-3 mb-4">
           <div className="flex w-full gap-4">
             <label className="flex h-32 flex-1 cursor-pointer items-center justify-center rounded bg-[#5D474D] text-white">
