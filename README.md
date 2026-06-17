@@ -212,13 +212,14 @@ De volgende onderdelen van het systeem zijn volledig afgerond en werken correct:
   - Maximale bestandsgrootte is ingesteld  
 - Basisbeveiliging bij upload en download  
 - Opslaan van bestandsmetadata in de database  
+- Login- en registratiesysteem 
 ---
 
 ### Nog niet afgerond
 
 De volgende onderdelen zijn nog niet volledig uitgewerkt:
 
-- Login- en registratiesysteem  
+- Google login
 - Dashboard  
 - Uitgebreide logging  
 - Upload naar UploadThing (cloud storage)  
