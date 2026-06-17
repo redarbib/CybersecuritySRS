@@ -37,8 +37,12 @@ const FormRegister = () => {
       }
 
       console.log("Register success:", payload);
+      window.location.href = "/login?registered=1";
     } catch (error) {
       console.error(error);
+      setError(
+        error instanceof Error ? error.message : "Registration failed.",
+      );
     }
   };
 

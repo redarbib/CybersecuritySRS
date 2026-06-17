@@ -5,9 +5,16 @@ import Link from "next/link";
 const FormLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [registeredSuccessfully] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("registered") === "1",
+  );
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setError(null);
 
     try {
       const response = await fetch("/api/login", {
@@ -28,8 +35,10 @@ const FormLogin = () => {
       }
 
       console.log("Login success:", payload);
+      window.location.href = "/";
     } catch (error) {
       console.error(error);
+      setError(error instanceof Error ? error.message : "Login failed.");
     }
   };
 
@@ -100,11 +109,17 @@ const FormLogin = () => {
       >
         Login
       </button>
+      {registeredSuccessfully && (
+        <p className="text-sm text-green-600">
+          Account created successfully. You can log in now.
+        </p>
+      )}
+      {error && <p className="text-sm text-red-500">{error}</p>}
       <Link
         href="/register"
         className="text-sm text-[#4E3D42] hover:underline text-center"
       >
-        Don't have an account? Register
+        Dont have an account? Register
       </Link>
     </form>
   );
