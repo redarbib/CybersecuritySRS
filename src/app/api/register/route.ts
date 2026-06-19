@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { ResultSetHeader } from "mysql2";
 import pool from "../../../../lib/db";
+import {
+  AUTH_SESSION_COOKIE,
+  AUTH_SESSION_MAX_AGE_SECONDS,
+  createSessionToken,
+} from "../../../../lib/authSession";
 
 export async function POST(request: Request) {
   try {
@@ -29,10 +34,25 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(
+    const userId = Number(result.insertId);
+    const response = NextResponse.json(
       { message: "Account created successfully." },
       { status: 201 }
     );
+
+    response.cookies.set(
+      AUTH_SESSION_COOKIE,
+      createSessionToken({ userId, email }),
+      {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: AUTH_SESSION_MAX_AGE_SECONDS,
+      },
+    );
+
+    return response;
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown registration error.";

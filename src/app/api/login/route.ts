@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import pool from "../../../../lib/db";
+import {
+  AUTH_SESSION_COOKIE,
+  AUTH_SESSION_MAX_AGE_SECONDS,
+  createSessionToken,
+} from "../../../../lib/authSession";
 
 type UserRow = {
   Id: number;
@@ -46,7 +51,7 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         message: "Login successful",
         userId: user.Id,
@@ -54,6 +59,20 @@ export async function POST(request: Request) {
       },
       { status: 200 },
     );
+
+    response.cookies.set(
+      AUTH_SESSION_COOKIE,
+      createSessionToken({ userId: user.Id, email: user.Email }),
+      {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/",
+        maxAge: AUTH_SESSION_MAX_AGE_SECONDS,
+      },
+    );
+
+    return response;
   } catch (error) {
     console.error("ERROR: API - login", (error as Error).message);
     return NextResponse.json(

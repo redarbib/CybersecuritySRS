@@ -1,1 +1,0 @@
-// Hier moet een delete functie komen

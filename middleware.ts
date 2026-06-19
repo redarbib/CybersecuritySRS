@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidSecretHash } from "./lib/secretHash";
-
-const CURRENT_USER_ID = 1;
+import { getSessionFromCookieHeader } from "./lib/authSession";
 
 function parseUserId(rawUserId: string | null): number | null {
   if (!rawUserId) {
@@ -19,20 +18,22 @@ function parseUserId(rawUserId: string | null): number | null {
 export async function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  if (pathname !== "/download") {
+  if (pathname !== "/transfer") {
+    return NextResponse.next();
+  }
+
+  const session = getSessionFromCookieHeader(request.headers.get("cookie"));
+  if (session) {
     return NextResponse.next();
   }
 
   const requestedSecretHash = searchParams.get("code");
-  const hasValidSecretHash = await isValidSecretHash(requestedSecretHash);
   const requestedUserId = parseUserId(searchParams.get("userId"));
+  const hasValidSecretHash = requestedSecretHash
+    ? await isValidSecretHash(requestedSecretHash)
+    : false;
 
-  if (
-    !requestedSecretHash ||
-    !hasValidSecretHash ||
-    !requestedUserId ||
-    requestedUserId !== CURRENT_USER_ID
-  ) {
+  if (!requestedSecretHash || !hasValidSecretHash || !requestedUserId) {
     return new NextResponse("You have no access to this.", { status: 403 });
   }
 
@@ -40,5 +41,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/download"],
+  matcher: ["/transfer"],
 };

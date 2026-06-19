@@ -1,6 +1,7 @@
 "use client";
 import React, { FormEvent, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function FormLogin() {
   const [email, setEmail] = useState("");
@@ -92,13 +93,6 @@ export default function FormLogin() {
         "
       />
 
-      <Link
-        href="/forgot-password"
-        className="text-sm text-[#4E3D42] hover:underline text-center"
-      >
-        Forgot password?
-      </Link>
-
       <button
         type="submit"
         className="
@@ -140,7 +134,7 @@ export default function FormLogin() {
           active:scale-95
         "
       >
-        <img src="/google.png " alt="Google" className="w-5 h-5" />
+        <Image src="/google.png" alt="Google" width={20 } height={20} />
         Login with Google
       </button>
 

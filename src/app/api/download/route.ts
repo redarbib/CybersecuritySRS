@@ -1,16 +1,13 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+// This is used to download 1 specific file
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2/promise";
 import pool from "../../../../lib/db";
 import { isValidSecretHash } from "../../../../lib/secretHash";
-
-const CURRENT_USER_ID = 1;
+import { getSessionFromCookieHeader } from "../../../../lib/authSession";
 
 type FileRow = RowDataPacket & {
   Id: number;
   UserId: number;
-  FileName: string | null;
   StorageUrl: string | null;
 };
 
@@ -40,32 +37,13 @@ function parseUserId(rawUserId: string | null): number | null {
   return parsedValue;
 }
 
-function resolveContentType(fileName: string): string {
-  const extension = path.extname(fileName).toLowerCase();
-  switch (extension) {
-    case ".pdf":
-      return "application/pdf";
-    case ".png":
-      return "image/png";
-    case ".jpg":
-    case ".jpeg":
-      return "image/jpeg";
-    case ".txt":
-      return "text/plain; charset=utf-8";
-    case ".csv":
-      return "text/csv; charset=utf-8";
-    case ".zip":
-      return "application/zip";
-    case ".mp3":
-      return "audio/mpeg";
-    case ".mp4":
-      return "video/mp4";
-    case ".docx":
-      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    case ".rar":
-      return "application/vnd.rar";
-    default:
-      return "application/octet-stream";
+function isTrustedStorageUrl(storageUrl: string): boolean {
+  try {
+    const parsedUrl = new URL(storageUrl);
+    const hostname = parsedUrl.hostname.toLowerCase();
+    return hostname.endsWith("utfs.io") || hostname.endsWith("ufs.sh");
+  } catch {
+    return false;
   }
 }
 
@@ -92,15 +70,20 @@ export async function GET(request: Request) {
 
     const requestUrl = new URL(request.url);
     const requestedSecretHash = requestUrl.searchParams.get("code");
-    const hasValidSecretHash = await isValidSecretHash(requestedSecretHash);
+    const hasValidSecretHash = requestedSecretHash
+      ? await isValidSecretHash(requestedSecretHash)
+      : false;
+    const session = getSessionFromCookieHeader(request.headers.get("cookie"));
     const requestedUserId = parseUserId(requestUrl.searchParams.get("userId"));
+    const targetUserId = requestedUserId ?? session?.userId ?? null;
+    const hasSessionAccess = Boolean(
+      session && targetUserId && session.userId === targetUserId,
+    );
+    const hasSecretAccess = Boolean(
+      requestedSecretHash && hasValidSecretHash && targetUserId,
+    );
 
-    if (
-      !requestedSecretHash ||
-      !hasValidSecretHash ||
-      !requestedUserId ||
-      requestedUserId !== CURRENT_USER_ID
-    ) {
+    if (!targetUserId || (!hasSessionAccess && !hasSecretAccess)) {
       return NextResponse.json(
         { message: "You have no access to this." },
         { status: 403 },
@@ -116,56 +99,38 @@ export async function GET(request: Request) {
     }
 
     const [files] = await pool.query<FileRow[]>(
-      `SELECT f.Id, f.FileName, f.StorageUrl, t.UserId
+      `SELECT f.Id, f.StorageUrl, t.UserId
        FROM files f
        INNER JOIN transfers t ON t.Id = f.TransferId
        WHERE f.Id = ?
        AND t.UserId = ?
        LIMIT 1`,
-      [fileId, requestedUserId],
+      [fileId, targetUserId],
     );
 
     const targetFile = files[0];
-    if (!targetFile || Number(targetFile.UserId) !== CURRENT_USER_ID) {
+    if (!targetFile || Number(targetFile.UserId) !== targetUserId) {
       return NextResponse.json(
         { message: "You have no access to this." },
         { status: 403 },
       );
     }
 
-    const storedFileName = path.basename(targetFile.StorageUrl ?? "");
-    if (!storedFileName) {
+    if (!targetFile.StorageUrl) {
       return NextResponse.json(
         { message: "Bestand bestaat niet." },
         { status: 404 },
       );
     }
 
-    const absoluteFilePath = path.join(process.cwd(), "uploads", storedFileName);
-
-    try {
-      await fs.access(absoluteFilePath);
-    } catch {
+    if (!isTrustedStorageUrl(targetFile.StorageUrl)) {
       return NextResponse.json(
-        { message: "Bestand bestaat niet." },
-        { status: 404 },
+        { message: "Ongeldige storage URL." },
+        { status: 400 },
       );
     }
 
-    const fileBuffer = await fs.readFile(absoluteFilePath);
-    const downloadName =
-      targetFile.FileName && targetFile.FileName.trim()
-        ? targetFile.FileName
-        : storedFileName;
-
-    return new NextResponse(fileBuffer, {
-      status: 200,
-      headers: {
-        "Content-Type": resolveContentType(downloadName),
-        "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(downloadName)}`,
-        "Cache-Control": "no-store",
-      },
-    });
+    return NextResponse.redirect(targetFile.StorageUrl, 302);
   } catch (error) {
     console.error("ERROR: API - download", (error as Error).message);
     return NextResponse.json(
