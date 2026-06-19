@@ -18,6 +18,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <Link
           href="/"
+          draggable="false"
           aria-label="Go to landing page"
           className="fixed left-5 top-4 z-50 block transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
         >
@@ -26,6 +27,7 @@ export default function RootLayout({
             alt="SRS"
             width={390}
             height={340}
+            draggable="false"
             priority
             className="h-auto w-[100px] sm:w-[115px]"
           />

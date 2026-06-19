@@ -23,17 +23,14 @@ export async function middleware(request: NextRequest) {
   }
 
   const session = getSessionFromCookieHeader(request.headers.get("cookie"));
-  if (session) {
-    return NextResponse.next();
-  }
 
   const requestedSecretHash = searchParams.get("code");
   const requestedUserId = parseUserId(searchParams.get("userId"));
+  const targetUserId = requestedUserId ?? session?.userId ?? null;
   const hasValidSecretHash = requestedSecretHash
     ? await isValidSecretHash(requestedSecretHash)
     : false;
-
-  if (!requestedSecretHash || !hasValidSecretHash || !requestedUserId) {
+  if (!requestedSecretHash || !hasValidSecretHash || !targetUserId) {
     return new NextResponse("You have no access to this.", { status: 403 });
   }
 

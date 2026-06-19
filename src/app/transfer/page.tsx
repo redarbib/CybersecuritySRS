@@ -25,6 +25,7 @@ type FetchFilesResponse = {
 type DashboardSearchParams = {
   userId?: string | string[];
   code?: string | string[];
+  fileId?: string | string[];
 };
 
 type TransferProps = {
@@ -35,6 +36,17 @@ function parseUserId(rawUserId: string | null): number | null {
   if (!rawUserId) return null;
 
   const parsedValue = Number(rawUserId);
+  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
+    return null;
+  }
+
+  return parsedValue;
+}
+
+function parseFileId(rawFileId: string | null): number | null {
+  if (!rawFileId) return null;
+
+  const parsedValue = Number(rawFileId);
   if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
     return null;
   }
@@ -82,11 +94,12 @@ async function getFilesFromApi(
       requestHeaders.get("x-forwarded-proto") ??
       (process.env.NODE_ENV === "production" ? "https" : "http");
 
-    const fetchUrl = secretHash
-      ? `${protocol}://${host}/api/fetch?userId=${userId}&code=${encodeURIComponent(secretHash)}`
-      : `${protocol}://${host}/api/fetch?userId=${userId}`;
-
-    const response = await fetch(fetchUrl, { cache: "no-store" });
+    const fetchUrl = `${protocol}://${host}/api/fetch?userId=${userId}&code=${encodeURIComponent(secretHash)}`;
+    const cookieHeader = requestHeaders.get("cookie");
+    const response = await fetch(fetchUrl, {
+      cache: "no-store",
+      headers: cookieHeader ? { cookie: cookieHeader } : undefined,
+    });
 
     if (!response.ok) {
       return { files: [], missingFiles: [] };
@@ -110,37 +123,32 @@ export default async function Transfer({ searchParams }: TransferProps) {
   const queryUserId = parseUserId(
     getSingleSearchParam(resolvedSearchParams?.userId),
   );
+  const selectedFileId = parseFileId(
+    getSingleSearchParam(resolvedSearchParams?.fileId),
+  );
   const resolvedUserId = session?.userId ?? queryUserId;
   const hasValidSecretHash = requestedSecretHash
     ? await isValidSecretHash(requestedSecretHash)
     : false;
-  const hasSessionAccess = Boolean(
-    session && resolvedUserId && session.userId === resolvedUserId,
-  );
   const hasSecretAccess = Boolean(
     requestedSecretHash && resolvedUserId && hasValidSecretHash,
   );
 
-  const hasSecureAccess = hasSessionAccess || hasSecretAccess;
-
   const { files } =
-    hasSecureAccess && requestedSecretHash && resolvedUserId
+    hasSecretAccess && requestedSecretHash && resolvedUserId
       ? await getFilesFromApi(resolvedUserId, requestedSecretHash)
-      : hasSessionAccess && resolvedUserId
-        ? await getFilesFromApi(resolvedUserId, "")
-        : { files: [] };
+      : { files: [] };
 
   const fileCount = files.length;
-  const firstFile = files[0];
-  const displayFileName = firstFile?.FileName ?? "Filenaam.type";
-  const displayFileType = firstFile?.FileType ?? "Type";
-  const displayFileSize = formatFileSize(firstFile?.FileSize ?? null);
+  const selectedFile =
+    files.find((file) => file.Id === selectedFileId) ?? files[0];
+  const displayFileName = selectedFile?.FileName ?? "Filenaam.type";
+  const displayFileType = selectedFile?.FileType ?? "Type";
+  const displayFileSize = formatFileSize(selectedFile?.FileSize ?? null);
 
   const secureDownloadLink =
-    hasSecureAccess && firstFile && resolvedUserId
-      ? requestedSecretHash
-        ? `/api/download?fileId=${firstFile.Id}&userId=${resolvedUserId}&code=${encodeURIComponent(requestedSecretHash)}`
-        : `/api/download?fileId=${firstFile.Id}&userId=${resolvedUserId}`
+    hasSecretAccess && selectedFile && resolvedUserId && requestedSecretHash
+      ? `/api/download?fileId=${selectedFile.Id}&userId=${resolvedUserId}&code=${encodeURIComponent(requestedSecretHash)}`
       : "#";
 
   return (
@@ -168,14 +176,14 @@ export default async function Transfer({ searchParams }: TransferProps) {
           </div>
 
           <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="rounded border border-black/20 p-4">
+            <div className="rounded border border-black/15 p-4">
               <div className="text-2xl sm:text-3xl leading-tight">
                 {fileCount > 0 ? `${fileCount} File` : "1 File"}
               </div>
 
               <div className="text-sm text-black/65">Test</div>
 
-              <div className="mt-2 rounded border border-black/20 p-2">
+              <div className="mt-2 rounded border border-black/15 p-2">
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-xl sm:text-2xl leading-tight truncate">
                     {displayFileName}
@@ -199,12 +207,12 @@ export default async function Transfer({ searchParams }: TransferProps) {
               </div>
             </div>
 
-            <div className="rounded border border-black/20 p-4">
+            <div className="rounded border border-black/15 p-4">
               <div className="text-2xl sm:text-3xl leading-tight">
                 Extra settings
               </div>
 
-              <div className="mt-2 h-10 border-b border-black/25 flex items-center justify-between text-sm sm:text-base text-black/80">
+              <div className="mt-2 h-10 border-b border-black/15 flex items-center justify-between text-sm sm:text-base text-black/80">
                 <span>No password set</span>
                 <Image
                   src="/arrow-down.svg"

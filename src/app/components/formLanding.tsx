@@ -51,7 +51,7 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
   });
 
   const inputClass =
-    "w-full text-black bg-transparent p-2 m-1 border-b border-black outline-none";
+    "w-full text-black bg-transparent pb-2 pt-2 border-b border-black outline-none";
 
   useEffect(() => {
     if (!folderInputRef.current) {
@@ -277,9 +277,8 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
             placeholder="Message"
             className={inputClass}
           />
-
           <div className="flex flex-col">
-            <label htmlFor="expiryDate" className="px-2 text-xs text-zinc-600">
+            <label htmlFor="expiryDate" className="text-xs text-zinc-600">
               Expiry date
             </label>
             <input

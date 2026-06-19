@@ -54,14 +54,10 @@ export async function GET(request: Request) {
     const session = getSessionFromCookieHeader(request.headers.get("cookie"));
     const requestedUserId = parseUserId(requestUrl.searchParams.get("userId"));
     const targetUserId = requestedUserId ?? session?.userId ?? null;
-    const hasSessionAccess = Boolean(
-      session && targetUserId && session.userId === targetUserId,
-    );
     const hasSecretAccess = Boolean(
       requestedSecretHash && hasValidSecretHash && targetUserId,
     );
-
-    if (!targetUserId || (!hasSessionAccess && !hasSecretAccess)) {
+    if (!hasSecretAccess) {
       return NextResponse.json(
         { message: "You have no access to this." },
         { status: 403 },

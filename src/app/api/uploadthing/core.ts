@@ -18,6 +18,7 @@ const ALLOWED_FILE_TYPES = new Set([
   "rar",
   "zip",
   "csv",
+  "txt",
   "docx",
   "pdf",
 ]);
