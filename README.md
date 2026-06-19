@@ -195,9 +195,8 @@ secure-file-transfer-system/
 - **Encrypted Storage:** AES-256 (UploadThing/S3)
 - **Authentication:** Required for uploads and edits
 - **File Type Restrictions:** Strict whitelist enforced
-- **File Size Limits:** Maximum of 100 GB to prevent abuse and overload
+- **File Size Limits:** Maximum of 2 GB to prevent abuse and overload
 - **Integrity Checks:** Upload status verification + checksum validation
-- **Error Logging:** All transfer errors logged and stored in the database
 
 ## Status van Functionaliteiten
 
@@ -213,6 +212,8 @@ De volgende onderdelen van het systeem zijn volledig afgerond en werken correct:
 - Basisbeveiliging bij upload en download  
 - Opslaan van bestandsmetadata in de database  
 - Login- en registratiesysteem 
+- Dashboard  
+- Upload naar UploadThing (cloud storage)  
 ---
 
 ### Nog niet afgerond
@@ -220,9 +221,6 @@ De volgende onderdelen van het systeem zijn volledig afgerond en werken correct:
 De volgende onderdelen zijn nog niet volledig uitgewerkt:
 
 - Google login
-- Dashboard  
-- Uitgebreide logging  
-- Upload naar UploadThing (cloud storage)  
 
 ## Testing
 
