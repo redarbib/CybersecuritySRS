@@ -11,7 +11,7 @@ type FileAccessScope = {
   userId: number;
 };
 
- // Resolve secret from environment variables with fallback for dev
+// Resolve secret from environment variables with fallback
 function getFileAccessSecret(): string {
   return (
     process.env.FILE_ACCESS_SECRET?.trim() ||

@@ -17,7 +17,6 @@ export async function hashSecretCode(secretCode: string): Promise<string> {
 
 // Resolve expeccted hash using the secretCode and code from .env
 export async function resolveExpectedSecretHash(): Promise<string | null> {
-
   // Fetch secret code from the .env file
   const secretCode = process.env.SECRET_CODE?.trim();
 
@@ -38,12 +37,12 @@ export async function isValidSecretHash(
     return false;
   }
 
-
   const expectedSecretHash = await resolveExpectedSecretHash();
   // If there is no expectedSecretHash using the function here above return false
   if (!expectedSecretHash) {
     return false;
   }
 
+  // Check whether the provided secret hash matches the expected hash
   return requestedSecretHash === expectedSecretHash;
 }
