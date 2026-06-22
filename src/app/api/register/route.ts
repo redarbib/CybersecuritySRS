@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     const userId = Number(result.insertId);
     const response = NextResponse.json(
       { message: "Account created successfully." },
-      { status: 201 }
+      { status: 201 },
     );
 
     response.cookies.set(
@@ -56,7 +56,6 @@ export async function POST(request: Request) {
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown registration error.";
-    console.error("ERROR: API - register", errorMessage);
 
     if (
       typeof error === "object" &&

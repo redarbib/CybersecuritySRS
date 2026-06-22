@@ -131,6 +131,7 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
         });
         const registerPayload = (await registerResponse.json()) as AuthResponse;
 
+        // If the account already exists route the user to login
         if (registerResponse.status === 409) {
           const loginResponse = await fetch("/api/login", {
             method: "POST",
@@ -293,7 +294,7 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
         <button
           type="submit"
           disabled={isUploading}
-          className="mt-5 text-xl rounded-lg bg-[#4E3D42] p-3 text-white w-full active:bg-[#3A2C30] hover:bg-[#3A2C30] disabled:opacity-60 disabled:cursor-not-allowed"
+          className="mt-5 text-xl rounded-lg bg-[#4E3D42] p-3 text-white w-full active:bg-[#3A2C30] hover:bg-[#3A2C30] hover:cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isUploading ? "Uploading..." : "Transfer"}
         </button>

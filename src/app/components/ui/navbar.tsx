@@ -20,7 +20,7 @@ const Navbar = async () => {
   if (session) {
     return (
       <div className="flex w-fit max-w-[500px] items-center justify-center gap-3 bg-white p-3 rounded-lg">
-        <Link href="/dashboard" className="text-zinc-900">
+        <Link href="/dashboard" className="text-zinc-900 hover:underline">
           Dashboard
         </Link>
 
@@ -31,7 +31,7 @@ const Navbar = async () => {
         <form action={logout}>
           <button
             type="submit"
-            className="text-sm rounded-lg bg-[#4E3D42] p-3 text-white active:bg-[#3A2C30] hover:bg-[#3A2C30]"
+            className="text-sm rounded-lg bg-[#4E3D42] p-3 text-white active:bg-[#3A2C30] hover:cursor-pointer hover:bg-[#3A2C30]"
           >
             Logout
           </button>

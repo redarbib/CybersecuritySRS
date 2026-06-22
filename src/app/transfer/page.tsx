@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { headers } from "next/headers";
 import { isValidSecretHash } from "../../../lib/secretHash";
-import FormLanding from "../components/formLanding";
+import FormLanding from "../components/formUpload";
 import { getSessionFromServerCookies } from "../../../lib/authSession";
 import Navbar from "../components/ui/navbar";
 
@@ -65,12 +65,21 @@ function getSingleSearchParam(
 }
 
 function formatFileSize(size: number | null): string {
-  if (!size || size < 0) return "1 MB";
+  // If the file is false or less than 0 return Unknown
+  if (!size || size < 0) return "Unknown";
+
+  // If the file is less than 1024 bytes return B
   if (size < 1024) return `${size} B`;
+
+  // If the file is less than 1024 times 1024 return size divided by 1024 in a string in KB
   if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+
+  // If the file is less than 1024 times 1024 twice then return size divided by 1024 times 1024 in a string in mb
   if (size < 1024 * 1024 * 1024) {
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   }
+
+  // If all the above are false return GB
   return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
@@ -159,33 +168,15 @@ export default async function Transfer({ searchParams }: TransferProps) {
         <div className="mx-auto max-w-[760px]">
           <Navbar />
 
-          <h1 className="mt-3 text-2xl sm:text-3xl leading-tight">
+          <h1 className="mt-3 text-xl sm:text-3xl leading-tight">
             {displayFileName}
           </h1>
 
-          <p className="text-sm text-black/60 mt-1">
-            {fileCount > 0 ? `${fileCount} File` : "1 File"} &nbsp;
-            {displayFileSize}
-            &nbsp; Made 1 second ago
-          </p>
-
-          <div className="mt-2 flex max-w-[310px] rounded overflow-hidden">
-            {/* <div className="flex-1 h-9 flex items-center justify-center text-sm sm:text-base truncate px-2">
-              {secureDownloadLink}
-            </div> */}
-          </div>
-
           <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="rounded border border-black/15 p-4">
-              <div className="text-2xl sm:text-3xl leading-tight">
-                {fileCount > 0 ? `${fileCount} File` : "1 File"}
-              </div>
-
-              <div className="text-sm text-black/65">Test</div>
-
-              <div className="mt-2 rounded border border-black/15 p-2">
+            <div className="rounded p-4 border border-[#d6d6d6] bg-white">
+              <div className="mt-2">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-xl sm:text-2xl leading-tight truncate">
+                  <div className="text-xl text-zinc-600 sm:text-2xl leading-tight truncate">
                     {displayFileName}
                   </div>
 
@@ -207,12 +198,12 @@ export default async function Transfer({ searchParams }: TransferProps) {
               </div>
             </div>
 
-            <div className="rounded border border-black/15 p-4">
+            {/* <div className="rounded p-4 border border-[#d6d6d6] bg-white">
               <div className="text-2xl sm:text-3xl leading-tight">
                 Extra settings
               </div>
 
-              <div className="mt-2 h-10 border-b border-black/15 flex items-center justify-between text-sm sm:text-base text-black/80">
+              <div className="mt-2 h-10 flex items-center justify-between text-sm sm:text-base text-black/80">
                 <span>No password set</span>
                 <Image
                   src="/arrow-down.svg"
@@ -221,7 +212,7 @@ export default async function Transfer({ searchParams }: TransferProps) {
                   height={16}
                 />
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>

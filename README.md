@@ -59,7 +59,7 @@ This restriction reduces security risks such as malware uploads or unsupported f
 - Track whether a file has been downloaded by a recipient
 
 ### Integrity & Safety Controls
-- Maximum file size of 100 GB to prevent abuse and server overload
+- Maximum file size of 2 GB to prevent abuse and server overload
 - Upload status verification via UploadThing response
 - Checksum-based integrity validation to confirm files are uploaded fully and correctly
 
@@ -84,7 +84,7 @@ This restriction reduces security risks such as malware uploads or unsupported f
 
 ### 4. File Validation
 - Allowed file types enforced
-- Maximum file size of 100 GB enforced to prevent DoS-style abuse
+- Maximum file size of 2 GB enforced to prevent DoS-style abuse
 - Upload verification handled via UploadThing response status and checksum integrity checks
 
 ### 5. Threat Protection
@@ -116,7 +116,6 @@ The system is designed to mitigate:
 - AES-256 encryption at rest (provider-level)
 - Middleware-based authentication
 - Secure file upload validation
-- Error logging and monitoring
 
 ## System Architecture
 
@@ -200,7 +199,7 @@ secure-file-transfer-system/
 
 ## Status van Functionaliteiten
 
-### Afgeronde functies
+### Functies
 
 De volgende onderdelen van het systeem zijn volledig afgerond en werken correct:
 
@@ -215,12 +214,6 @@ De volgende onderdelen van het systeem zijn volledig afgerond en werken correct:
 - Dashboard  
 - Upload naar UploadThing (cloud storage)  
 ---
-
-### Nog niet afgerond
-
-De volgende onderdelen zijn nog niet volledig uitgewerkt:
-
-- Google login
 
 ## Testing
 

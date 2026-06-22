@@ -1,5 +1,5 @@
 import Navbar from "./components/ui/navbar";
-import FormLanding from "./components/formLanding";
+import FormLanding from "./components/formUpload";
 import { getSessionFromServerCookies } from "../../lib/authSession";
 
 export default async function UploadFilePage() {

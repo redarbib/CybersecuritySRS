@@ -128,7 +128,6 @@ export async function GET(request: Request) {
 
     return NextResponse.redirect(targetFile.StorageUrl, 302);
   } catch (error) {
-    console.error("ERROR: API - download", (error as Error).message);
     return NextResponse.json(
       { message: "Download mislukt. Probeer het opnieuw." },
       { status: 500 },

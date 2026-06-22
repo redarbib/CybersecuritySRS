@@ -84,7 +84,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ files: availableFiles, missingFiles });
   } catch (err) {
-    console.error("ERROR: API - fetch", (err as Error).message);
     return NextResponse.json(
       { message: "Kon bestanden niet ophalen." },
       { status: 500 },

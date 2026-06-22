@@ -1,6 +1,6 @@
 import "../globals.css";
 import DashboardCard from "../components/dashboardCard";
-import FormLanding from "../components/formLanding";
+import FormLanding from "../components/formUpload";
 import { getSessionFromServerCookies } from "../../../lib/authSession";
 
 export default async function DashboardPage() {

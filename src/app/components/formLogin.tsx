@@ -1,7 +1,6 @@
 "use client";
-import React, { FormEvent, useState } from "react";
+import { FormEvent, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function FormLogin() {
   const [email, setEmail] = useState("");
@@ -17,6 +16,7 @@ export default function FormLogin() {
     event.preventDefault();
     setError(null);
 
+    // Try block for login
     try {
       const response = await fetch("/api/login", {
         method: "POST",
@@ -29,16 +29,17 @@ export default function FormLogin() {
         }),
       });
 
+      // Bind payload to json response
       const payload = await response.json();
 
+      // If reponse is not okay show payload message
       if (!response.ok) {
         throw new Error(payload.message ?? "Login failed.");
       }
 
-      console.log("Login success:", payload);
-      window.location.href = "/";
+      // Send the user to dashboard
+      window.location.href = "/dashboard";
     } catch (error) {
-      console.error(error);
       setError(error instanceof Error ? error.message : "Login failed.");
     }
   };
@@ -93,6 +94,8 @@ export default function FormLogin() {
         "
       />
 
+      {error && <p className="text-sm text-red-500">{error}</p>}
+
       <button
         type="submit"
         className="
@@ -104,38 +107,11 @@ export default function FormLogin() {
           font-medium
           transition-all duration-200
           hover:bg-[#3f3135]
+          hover:cursor-pointer
           active:scale-95
         "
       >
         Login
-      </button>
-
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-zinc-300" />
-        <span className="text-xs text-zinc-400 uppercase tracking-wide">
-          or
-        </span>
-        <div className="h-px flex-1 bg-zinc-300" />
-      </div>
-
-      <button
-        type="button"
-        className="
-          w-full
-          rounded-lg
-          border border-zinc-300
-          bg-white
-          py-3
-          text-zinc-700
-          font-medium
-          flex items-center justify-center gap-2
-          transition-all duration-200
-          hover:bg-zinc-50
-          active:scale-95
-        "
-      >
-        <Image src="/google.png" alt="Google" width={20 } height={20} />
-        Login with Google
       </button>
 
       {registeredSuccessfully && (
@@ -143,8 +119,6 @@ export default function FormLogin() {
           Account created successfully. You can log in now.
         </p>
       )}
-
-      {error && <p className="text-sm text-red-500">{error}</p>}
 
       <Link
         href="/register"

@@ -2,7 +2,7 @@
 import React, { FormEvent, useState } from "react";
 import Link from "next/link";
 
-export default function FormRegister(){
+export default function FormRegister() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -18,6 +18,7 @@ export default function FormRegister(){
       return;
     }
 
+    // Try block for register
     try {
       const response = await fetch("/api/register", {
         method: "POST",
@@ -30,19 +31,18 @@ export default function FormRegister(){
         }),
       });
 
+      // Bind payload to json response
       const payload = await response.json();
 
+      // If reponse is not okay show payload message
       if (!response.ok) {
         throw new Error(payload.message ?? "Registration failed.");
       }
 
-      console.log("Register success:", payload);
+      // Send the user to login
       window.location.href = "/login?registered=1";
     } catch (error) {
-      console.error(error);
-      setError(
-        error instanceof Error ? error.message : "Registration failed.",
-      );
+      setError(error instanceof Error ? error.message : "Registration failed.");
     }
   };
 
@@ -133,6 +133,7 @@ export default function FormRegister(){
           font-medium
           transition-all duration-200
           hover:bg-[#3f3135]
+          hover:cursor-pointer
           active:scale-95
         "
       >
@@ -147,4 +148,4 @@ export default function FormRegister(){
       </Link>
     </form>
   );
-};
+}
