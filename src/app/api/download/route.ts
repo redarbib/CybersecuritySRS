@@ -2,40 +2,13 @@
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2/promise";
 import pool from "../../../../lib/db";
-import { isValidSecretHash } from "../../../../lib/secretHash";
-import { getSessionFromCookieHeader } from "../../../../lib/authSession";
+import { getFileAccessFromToken } from "../../../../lib/fileAccessToken";
 
 type FileRow = RowDataPacket & {
   Id: number;
   UserId: number;
   StorageUrl: string | null;
 };
-
-function parseFileId(rawFileId: string | null): number | null {
-  if (!rawFileId) {
-    return null;
-  }
-
-  const parsedValue = Number(rawFileId);
-  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
-    return null;
-  }
-
-  return parsedValue;
-}
-
-function parseUserId(rawUserId: string | null): number | null {
-  if (!rawUserId) {
-    return null;
-  }
-
-  const parsedValue = Number(rawUserId);
-  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
-    return null;
-  }
-
-  return parsedValue;
-}
 
 function isTrustedStorageUrl(storageUrl: string): boolean {
   try {
@@ -69,30 +42,18 @@ export async function GET(request: Request) {
     }
 
     const requestUrl = new URL(request.url);
-    const requestedSecretHash = requestUrl.searchParams.get("code");
-    const hasValidSecretHash = requestedSecretHash
-      ? await isValidSecretHash(requestedSecretHash)
-      : false;
-    const session = getSessionFromCookieHeader(request.headers.get("cookie"));
-    const requestedUserId = parseUserId(requestUrl.searchParams.get("userId"));
-    const targetUserId = requestedUserId ?? session?.userId ?? null;
-    const hasSecretAccess = Boolean(
-      requestedSecretHash && hasValidSecretHash && targetUserId,
+    const fileAccessScope = getFileAccessFromToken(
+      requestUrl.searchParams.get("file"),
     );
-    if (!hasSecretAccess) {
+    if (!fileAccessScope) {
       return NextResponse.json(
         { message: "You have no access to this." },
         { status: 403 },
       );
     }
 
-    const fileId = parseFileId(requestUrl.searchParams.get("fileId"));
-    if (!fileId) {
-      return NextResponse.json(
-        { message: "Ongeldig of ontbrekend fileId." },
-        { status: 400 },
-      );
-    }
+    const fileId = fileAccessScope.fileId;
+    const targetUserId = fileAccessScope.userId;
 
     const [files] = await pool.query<FileRow[]>(
       `SELECT f.Id, f.StorageUrl, t.UserId
@@ -127,7 +88,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.redirect(targetFile.StorageUrl, 302);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Download mislukt. Probeer het opnieuw." },
       { status: 500 },

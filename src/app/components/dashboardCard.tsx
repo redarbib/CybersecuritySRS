@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { RowDataPacket } from "mysql2/promise";
 import pool from "../../../lib/db";
-import { resolveExpectedSecretHash } from "../../../lib/secretHash";
+import { createFileAccessToken } from "../../../lib/fileAccessToken";
 import Navbar from "./ui/navbar";
 
 type DashboardCardProps = {
@@ -47,9 +47,6 @@ const DashboardCard = async ({ email, userId }: DashboardCardProps) => {
     [userId],
   );
 
-  // Await this function to define secretHash
-  const secretHash = await resolveExpectedSecretHash();
-
   // If the email or userId is missing return this page, but if these are true show the other page found below
   if (!email || !userId) {
     return (
@@ -59,6 +56,22 @@ const DashboardCard = async ({ email, userId }: DashboardCardProps) => {
     );
   }
 
+  const filesWithAccessLink = files
+    .map((file) => {
+      const fileAccessToken = createFileAccessToken(file.Id, userId);
+      if (!fileAccessToken) {
+        return null;
+      }
+
+      return {
+        ...file,
+        transferUrl: `/transfer?file=${encodeURIComponent(fileAccessToken)}`,
+      };
+    })
+    .filter(
+      (file): file is DashboardFileRow & { transferUrl: string } =>
+        file !== null,
+    );
   return (
     <div className="flex min-h-screen w-full">
       <aside className="min-h-screen w-full bg-[#efefef] p-6 text-black">
@@ -88,18 +101,14 @@ const DashboardCard = async ({ email, userId }: DashboardCardProps) => {
 
           {files.length === 0 ? (
             <p className="mt-2 text-sm text-[#666666]">
-              No files uploaded yet.
+              No transfers made yet.
             </p>
           ) : (
             <div className="mt-2 space-y-2">
-              {files.map((file) => (
+              {filesWithAccessLink.map((file) => (
                 <Link
                   key={file.Id}
-                  href={
-                    secretHash
-                      ? `/transfer?fileId=${file.Id}&userId=${userId}&code=${encodeURIComponent(secretHash)}`
-                      : `/transfer?fileId=${file.Id}`
-                  }
+                  href={file.transferUrl}
                   className="block rounded-md"
                 >
                   <article className="flex min-h-16 bg-white items-center justify-between rounded-md border border-[#d6d6d6] px-3 py-2 transition-colors hover:bg-black/[0.03]">

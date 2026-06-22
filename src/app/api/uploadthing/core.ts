@@ -1,11 +1,11 @@
-import path from "node:path"; // Node utility for working with file paths/extensions
-import { ResultSetHeader } from "mysql2/promise"; // MySQL result typing for inserts
-import { z } from "zod"; // Schema validation library
-import { createUploadthing, type FileRouter } from "uploadthing/next"; // UploadThing setup
-import { UploadThingError } from "uploadthing/server"; // Custom upload errors
-import pool from "../../../../lib/db"; // Database connection pool
-import { resolveExpectedSecretHash } from "../../../../lib/secretHash"; // Secret hash generator
-import { getSessionFromCookieHeader } from "../../../../lib/authSession"; // Session parser from cookies
+import path from "node:path";
+import { ResultSetHeader } from "mysql2/promise";
+import { z } from "zod";
+import { createUploadthing, type FileRouter } from "uploadthing/next";
+import { UploadThingError } from "uploadthing/server";
+import pool from "../../../../lib/db";
+import { createFileAccessToken } from "../../../../lib/fileAccessToken";
+import { getSessionFromCookieHeader } from "../../../../lib/authSession";
 
 // Define MAX variables
 const MAX_FILE_SIZE = "2GB";
@@ -161,17 +161,22 @@ export const ourFileRouter = {
           );
         }
 
-        // Generate secret hash for secure access
-        const secretHash = await resolveExpectedSecretHash();
-
-        // Build transfer page URL
-        const downloadPageUrl = secretHash
-          ? `/transfer?userId=${metadata.userId}&code=${encodeURIComponent(secretHash)}`
+        // Build transfer page URL with a unique file token
+        const transferPageToken = createFileAccessToken(
+          createdFileId,
+          metadata.userId,
+        );
+        const downloadPageUrl = transferPageToken
+          ? `/transfer?file=${encodeURIComponent(transferPageToken)}`
           : null;
 
-        // Build direct file download URL
-        const fileDownloadUrl = secretHash
-          ? `/api/download?fileId=${createdFileId}&userId=${metadata.userId}&code=${encodeURIComponent(secretHash)}`
+        // Build direct file download URL with a unique file token
+        const fileDownloadToken = createFileAccessToken(
+          createdFileId,
+          metadata.userId,
+        );
+        const fileDownloadUrl = fileDownloadToken
+          ? `/api/download?file=${encodeURIComponent(fileDownloadToken)}`
           : null;
 
         // Return upload result to client
@@ -184,7 +189,7 @@ export const ourFileRouter = {
           downloadPageUrl,
           fileDownloadUrl,
         };
-      } catch (error) {
+      } catch {
         // Handle post-upload database failures
         throw new UploadThingError(
           "Upload voltooid, maar metadata opslaan is mislukt. Probeer het opnieuw.",

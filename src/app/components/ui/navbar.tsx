@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 // Logout function
 export async function logout() {
+  // Make this function run on the server side and not client side
   "use server";
 
   // Await function to delete cookie from authSession

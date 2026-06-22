@@ -1,9 +1,8 @@
-// List all files for an user
+// Fetch one specific file for a shared token
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2/promise";
 import pool from "../../../../lib/db";
-import { isValidSecretHash } from "../../../../lib/secretHash";
-import { getSessionFromCookieHeader } from "../../../../lib/authSession";
+import { getFileAccessFromToken } from "../../../../lib/fileAccessToken";
 
 type FileListRow = RowDataPacket & {
   Id: number;
@@ -16,17 +15,6 @@ type MissingFileRow = {
   Id: number;
   FileName: string;
 };
-
-function parseUserId(rawUserId: string | null): number | null {
-  if (!rawUserId) {
-    return null;
-  }
-  const parsedValue = Number(rawUserId);
-  if (!Number.isInteger(parsedValue) || parsedValue <= 0) {
-    return null;
-  }
-  return parsedValue;
-}
 
 function isSecureRequest(request: Request): boolean {
   if (process.env.NODE_ENV !== "production") {
@@ -47,31 +35,33 @@ export async function GET(request: Request) {
     }
 
     const requestUrl = new URL(request.url);
-    const requestedSecretHash = requestUrl.searchParams.get("code");
-    const hasValidSecretHash = requestedSecretHash
-      ? await isValidSecretHash(requestedSecretHash)
-      : false;
-    const session = getSessionFromCookieHeader(request.headers.get("cookie"));
-    const requestedUserId = parseUserId(requestUrl.searchParams.get("userId"));
-    const targetUserId = requestedUserId ?? session?.userId ?? null;
-    const hasSecretAccess = Boolean(
-      requestedSecretHash && hasValidSecretHash && targetUserId,
+    const fileAccessScope = getFileAccessFromToken(
+      requestUrl.searchParams.get("file"),
     );
-    if (!hasSecretAccess) {
+    if (!fileAccessScope) {
       return NextResponse.json(
         { message: "You have no access to this." },
         { status: 403 },
       );
     }
+    const targetUserId = fileAccessScope.userId;
+    const targetFileId = fileAccessScope.fileId;
 
     const [files] = await pool.query<FileListRow[]>(
       `SELECT f.Id, f.FileName, f.FileType, f.FileSize
        FROM files f
        INNER JOIN transfers t ON t.Id = f.TransferId
-       WHERE t.UserId = ?
-       ORDER BY f.Id DESC`,
-      [targetUserId],
+       WHERE f.Id = ?
+       AND t.UserId = ?
+       LIMIT 1`,
+      [targetFileId, targetUserId],
     );
+    if (files.length === 0) {
+      return NextResponse.json(
+        { message: "You have no access to this." },
+        { status: 403 },
+      );
+    }
 
     const availableFiles = files.map((file) => ({
       Id: file.Id,
@@ -83,7 +73,7 @@ export async function GET(request: Request) {
     const missingFiles: MissingFileRow[] = [];
 
     return NextResponse.json({ files: availableFiles, missingFiles });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { message: "Kon bestanden niet ophalen." },
       { status: 500 },
