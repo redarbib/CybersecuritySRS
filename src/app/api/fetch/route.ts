@@ -9,6 +9,9 @@ type FileListRow = RowDataPacket & {
   FileName: string;
   FileType: string | null;
   FileSize: number | null;
+  FileMessage: string | null;
+  FileTitle: string | null;
+  PasswordHashFile: string | null;
 };
 
 type MissingFileRow = {
@@ -48,12 +51,19 @@ export async function GET(request: Request) {
     const targetFileId = fileAccessScope.fileId;
 
     const [files] = await pool.query<FileListRow[]>(
-      `SELECT f.Id, f.FileName, f.FileType, f.FileSize
-       FROM files f
-       INNER JOIN transfers t ON t.Id = f.TransferId
-       WHERE f.Id = ?
-       AND t.UserId = ?
-       LIMIT 1`,
+      `SELECT 
+      f.Id,
+      f.FileName,
+      f.FileType,
+      f.FileSize,
+      t.Message as FileMessage,
+      t.Title as FileTitle,
+      t.PasswordHashFile
+      FROM files f
+      INNER JOIN transfers t ON t.Id = f.TransferId
+      WHERE f.Id = ?
+      AND t.UserId = ?
+      LIMIT 1`,
       [targetFileId, targetUserId],
     );
     if (files.length === 0) {
@@ -65,9 +75,12 @@ export async function GET(request: Request) {
 
     const availableFiles = files.map((file) => ({
       Id: file.Id,
+      FileTitle: file.FileTitle,
       FileName: file.FileName,
       FileType: file.FileType,
       FileSize: file.FileSize,
+      FileMessage: file.FileMessage,
+      HasFilePassword: Boolean(file.PasswordHashFile?.trim()),
     }));
 
     const missingFiles: MissingFileRow[] = [];

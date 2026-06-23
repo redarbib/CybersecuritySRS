@@ -5,6 +5,7 @@ import { useUploadThing } from "@/utils/uploadthing";
 
 type UploadServerData = {
   message?: string;
+  filePassword?: string | null;
   downloadPageUrl?: string | null;
   folderName?: string | null;
 };
@@ -13,7 +14,32 @@ type AuthResponse = {
   message?: string;
 };
 
+// Define max upload in bytes which is 128MB
 const MAX_TOTAL_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024;
+const MAX_TITLE_LENGTH = 50;
+const MAX_MESSAGE_LENGTH = 100;
+const MAX_FILE_PASSWORD_LENGTH = 255;
+const MAX_EMAIL_LENGTH = 255;
+const MAX_PASSWORD_LENGTH = 255;
+
+// Define default error message
+const DEFAULT_UPLOAD_ERROR_MESSAGE = "Upload mislukt. Probeer het opnieuw.";
+
+// Define allowed file types
+const ALLOWED_FILE_TYPES = new Set([
+  "png",
+  "mp3",
+  "mp4",
+  "rar",
+  "zip",
+  "csv",
+  "docx",
+  "pdf",
+]);
+
+// Define allowed file types label
+const ALLOWED_FILE_TYPES_LABEL = "png, mp3, mp4, rar, zip, csv, docx, pdf";
+
 type FormLandingProps = {
   isLoggedIn: boolean;
 };
@@ -27,6 +53,85 @@ function toOptionalString(
 
   const trimmedValue = value.trim();
   return trimmedValue ? trimmedValue : undefined;
+}
+
+function extractErrorMessage(error: unknown, fallbackMessage: string): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+
+  if (!error || typeof error !== "object") {
+    return fallbackMessage;
+  }
+
+  const errorObject = error as {
+    message?: unknown;
+    data?: unknown;
+    cause?: unknown;
+  };
+
+  if (typeof errorObject.message === "string" && errorObject.message.trim()) {
+    return errorObject.message;
+  }
+
+  if (typeof errorObject.cause === "string" && errorObject.cause.trim()) {
+    return errorObject.cause;
+  }
+
+  if (errorObject.data && typeof errorObject.data === "object") {
+    const data = errorObject.data as {
+      message?: unknown;
+      issues?: unknown;
+      zodError?: unknown;
+    };
+
+    if (typeof data.message === "string" && data.message.trim()) {
+      return data.message;
+    }
+
+    if (Array.isArray(data.issues) && data.issues.length > 0) {
+      const firstIssue = data.issues[0] as { message?: unknown } | undefined;
+      if (firstIssue && typeof firstIssue.message === "string") {
+        return firstIssue.message;
+      }
+    }
+
+    if (data.zodError && typeof data.zodError === "object") {
+      const zodError = data.zodError as { issues?: unknown };
+      if (Array.isArray(zodError.issues) && zodError.issues.length > 0) {
+        const firstIssue = zodError.issues[0] as
+          | { message?: unknown }
+          | undefined;
+        if (firstIssue && typeof firstIssue.message === "string") {
+          return firstIssue.message;
+        }
+      }
+    }
+  }
+
+  return fallbackMessage;
+}
+
+function getFileExtension(fileName: string): string {
+  const lastDotIndex = fileName.lastIndexOf(".");
+  if (lastDotIndex === -1) {
+    return "";
+  }
+
+  return fileName.slice(lastDotIndex + 1).toLowerCase();
+}
+
+function getFirstDisallowedFile(files: File[]): File | null {
+  return (
+    files.find(
+      (currentFile) =>
+        !ALLOWED_FILE_TYPES.has(getFileExtension(currentFile.name)),
+    ) ?? null
+  );
 }
 
 export default function FormLanding({ isLoggedIn }: FormLandingProps) {
@@ -46,7 +151,9 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
   const { startUpload, isUploading } = useUploadThing("secureFileUploader", {
     onUploadError: (error) => {
       setStatusType("error");
-      setStatusMessage(error.message);
+      setStatusMessage(
+        extractErrorMessage(error, DEFAULT_UPLOAD_ERROR_MESSAGE),
+      );
     },
   });
 
@@ -65,15 +172,55 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
   const handleSingleFileSelection = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const chosenFile = event.currentTarget.files?.[0] ?? null;
-    setSelectedFiles(chosenFile ? [chosenFile] : []);
+    const chosenFiles = Array.from(event.currentTarget.files ?? []);
+    const chosenFile = chosenFiles[0] ?? null;
+    if (!chosenFile) {
+      setSelectedFiles([]);
+      setSelectedFolderName(null);
+      return;
+    }
+
+    const disallowedFile = getFirstDisallowedFile([chosenFile]);
+
+    // If an user uploads an file that is not allowed show an message and stop the upload
+    if (disallowedFile) {
+      setSelectedFiles([]);
+      setSelectedFolderName(null);
+      setStatusType("error");
+      setStatusMessage(
+        `Bestandstype niet toegestaan: \"${disallowedFile.name}\". Bestandtypes die zijn toegestaan: ${ALLOWED_FILE_TYPES_LABEL}.`,
+      );
+      event.currentTarget.value = "";
+      return;
+    }
+
+    setSelectedFiles([chosenFile]);
     setSelectedFolderName(null);
+    setStatusType(null);
+    setStatusMessage(null);
   };
 
   const handleFolderSelection = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const chosenFiles = Array.from(event.currentTarget.files ?? []);
+    if (chosenFiles.length === 0) {
+      setSelectedFiles([]);
+      setSelectedFolderName(null);
+      return;
+    }
+
+    const disallowedFile = getFirstDisallowedFile(chosenFiles);
+    if (disallowedFile) {
+      setSelectedFiles([]);
+      setSelectedFolderName(null);
+      setStatusType("error");
+      setStatusMessage(
+        `Bestandstype niet toegestaan: \"${disallowedFile.name}\". Bestandtypes die zijn toegestaan: ${ALLOWED_FILE_TYPES_LABEL}.`,
+      );
+      event.currentTarget.value = "";
+      return;
+    }
     setSelectedFiles(chosenFiles);
 
     const firstRelativePath = chosenFiles[0]?.webkitRelativePath;
@@ -81,6 +228,8 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
       ? (firstRelativePath.split("/")[0] ?? null)
       : null;
     setSelectedFolderName(detectedFolderName);
+    setStatusType(null);
+    setStatusMessage(null);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -89,10 +238,9 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
     const formData = new FormData(form);
     const email = toOptionalString(formData.get("email"));
     const password = toOptionalString(formData.get("password"));
+    const filePassword = toOptionalString(formData.get("filePassword"));
     const title = toOptionalString(formData.get("title"));
     const message = toOptionalString(formData.get("message"));
-    const link = toOptionalString(formData.get("link"));
-    const expiryDate = toOptionalString(formData.get("expiryDate"));
     const uploadFolderName = selectedFolderName;
     const totalUploadBytes = selectedFiles.reduce(
       (accumulator, currentFile) => accumulator + currentFile.size,
@@ -102,15 +250,27 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
     setStatusType(null);
     setStatusMessage(null);
 
+    // If an user tries to upload nothing
     if (selectedFiles.length === 0) {
       setStatusType("error");
       setStatusMessage("Kies eerst een bestand of map.");
       return;
     }
 
+    const disallowedFile = getFirstDisallowedFile(selectedFiles);
+    if (disallowedFile) {
+      setStatusType("error");
+      setStatusMessage(
+        `Bestandstype niet toegestaan: \"${disallowedFile.name}\". Toegestaan: ${ALLOWED_FILE_TYPES_LABEL}.`,
+      );
+      return;
+    }
+
     if (totalUploadBytes > MAX_TOTAL_UPLOAD_BYTES) {
       setStatusType("error");
-      setStatusMessage("Totale upload is te groot. Maximum is 2GB per upload.");
+      setStatusMessage(
+        "Totale upload is te groot. Maximum is 128MB per upload.",
+      );
       return;
     }
 
@@ -120,6 +280,37 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
       return;
     }
 
+    if (!isLoggedIn && email && email.length > MAX_EMAIL_LENGTH) {
+      setStatusType("error");
+      setStatusMessage("Email mag maximaal 255 tekens bevatten.");
+      return;
+    }
+
+    if (!isLoggedIn && password && password.length > MAX_PASSWORD_LENGTH) {
+      setStatusType("error");
+      setStatusMessage("Wachtwoord mag maximaal 255 tekens bevatten.");
+      return;
+    }
+
+    if (title && title.length > MAX_TITLE_LENGTH) {
+      setStatusType("error");
+      setStatusMessage("Titel mag maximaal 50 tekens bevatten.");
+      return;
+    }
+
+    if (message && message.length > MAX_MESSAGE_LENGTH) {
+      setStatusType("error");
+      setStatusMessage("Bericht mag maximaal 100 tekens bevatten.");
+      return;
+    }
+
+    if (filePassword && filePassword.length > MAX_FILE_PASSWORD_LENGTH) {
+      setStatusType("error");
+      setStatusMessage("Bestandswachtwoord mag maximaal 100 tekens bevatten.");
+      return;
+    }
+
+    // If an user is not logged in send him to the register route
     try {
       if (!isLoggedIn) {
         const registerResponse = await fetch("/api/register", {
@@ -154,8 +345,7 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
       const uploadResponse = await startUpload(selectedFiles, {
         title,
         message,
-        link,
-        expiryDate,
+        filePassword,
         folderName: uploadFolderName ?? undefined,
       });
 
@@ -182,9 +372,7 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
     } catch (error) {
       setStatusType("error");
       setStatusMessage(
-        error instanceof Error
-          ? error.message
-          : "Upload mislukt. Probeer het opnieuw.",
+        extractErrorMessage(error, DEFAULT_UPLOAD_ERROR_MESSAGE),
       );
     }
   };
@@ -243,6 +431,7 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
                 type="file"
                 className="hidden"
                 multiple
+                accept=".png,.mp3,.mp4,.rar,.zip,.csv,.txt,.docx,.pdf"
                 onChange={handleFolderSelection}
               />
             </label>
@@ -255,6 +444,7 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
                 name="email"
                 placeholder="Your email"
                 required
+                maxLength={MAX_EMAIL_LENGTH}
                 className={inputClass}
               />
               <input
@@ -262,6 +452,7 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
                 name="password"
                 placeholder="Password"
                 required
+                maxLength={MAX_PASSWORD_LENGTH}
                 className={inputClass}
               />
             </>
@@ -270,25 +461,23 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
             type="text"
             name="title"
             placeholder="Title"
+            maxLength={MAX_TITLE_LENGTH}
             className={inputClass}
           />
           <input
             type="text"
             name="message"
             placeholder="Message"
+            maxLength={MAX_MESSAGE_LENGTH}
             className={inputClass}
           />
-          <div className="flex flex-col">
-            <label htmlFor="expiryDate" className="text-xs text-zinc-600">
-              Expiry date
-            </label>
-            <input
-              id="expiryDate"
-              type="date"
-              name="expiryDate"
-              className={inputClass}
-            />
-          </div>
+          <input
+            type="password"
+            name="filePassword"
+            placeholder="File password (optional)"
+            maxLength={MAX_FILE_PASSWORD_LENGTH}
+            className={inputClass}
+          />
         </div>
 
         <button

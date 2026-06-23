@@ -1,23 +1,37 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { ResultSetHeader } from "mysql2";
+import { z } from "zod";
 import pool from "../../../../lib/db";
 import {
   AUTH_SESSION_COOKIE,
   AUTH_SESSION_MAX_AGE_SECONDS,
   createSessionToken,
 } from "../../../../lib/authSession";
+const registerRequestSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email("Please provide a valid email address.")
+    .max(255, "Email can contain at most 255 characters."),
+  password: z
+    .string()
+    .min(1, "Password is required.")
+    .max(255, "Password can contain at most 255 characters."),
+});
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
-
-    if (!email || !password) {
+    const body = await request.json();
+    const parsedRequest = registerRequestSchema.safeParse(body);
+    if (!parsedRequest.success) {
+      const firstIssue = parsedRequest.error.issues[0];
       return NextResponse.json(
-        { message: "Email and password are required." },
+        { message: firstIssue?.message ?? "Invalid registration request." },
         { status: 400 },
       );
     }
+    const { email, password } = parsedRequest.data;
 
     const passwordHash = await bcrypt.hash(password, 10);
 

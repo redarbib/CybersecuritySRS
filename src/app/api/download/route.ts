@@ -1,6 +1,7 @@
 // This is used to download 1 specific file
 import { NextResponse } from "next/server";
 import { RowDataPacket } from "mysql2/promise";
+import bcrypt from "bcrypt";
 import pool from "../../../../lib/db";
 import { getFileAccessFromToken } from "../../../../lib/fileAccessToken";
 
@@ -8,6 +9,7 @@ type FileRow = RowDataPacket & {
   Id: number;
   UserId: number;
   StorageUrl: string | null;
+  PasswordHashFile: string | null;
 };
 
 function isTrustedStorageUrl(storageUrl: string): boolean {
@@ -56,7 +58,7 @@ export async function GET(request: Request) {
     const targetUserId = fileAccessScope.userId;
 
     const [files] = await pool.query<FileRow[]>(
-      `SELECT f.Id, f.StorageUrl, t.UserId
+      `SELECT f.Id, f.StorageUrl, t.UserId, t.PasswordHashFile
        FROM files f
        INNER JOIN transfers t ON t.Id = f.TransferId
        WHERE f.Id = ?
@@ -78,6 +80,35 @@ export async function GET(request: Request) {
         { message: "Bestand bestaat niet." },
         { status: 404 },
       );
+    }
+
+    const passwordHashFile = targetFile.PasswordHashFile?.trim();
+    if (passwordHashFile) {
+      const providedPassword = requestUrl.searchParams.get("password")?.trim();
+      if (!providedPassword) {
+        return NextResponse.json(
+          { message: "Bestandswachtwoord is verplicht." },
+          { status: 401 },
+        );
+      }
+
+      if (providedPassword.length > 255) {
+        return NextResponse.json(
+          { message: "Bestandswachtwoord mag maximaal 255 tekens bevatten." },
+          { status: 400 },
+        );
+      }
+
+      const isValidFilePassword = await bcrypt.compare(
+        providedPassword,
+        passwordHashFile,
+      );
+      if (!isValidFilePassword) {
+        return NextResponse.json(
+          { message: "Onjuist bestandswachtwoord." },
+          { status: 403 },
+        );
+      }
     }
 
     if (!isTrustedStorageUrl(targetFile.StorageUrl)) {

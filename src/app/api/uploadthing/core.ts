@@ -1,5 +1,6 @@
 import path from "node:path";
 import { ResultSetHeader } from "mysql2/promise";
+import bcrypt from "bcrypt";
 import { z } from "zod";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
@@ -7,12 +8,12 @@ import pool from "../../../../lib/db";
 import { createFileAccessToken } from "../../../../lib/fileAccessToken";
 import { getSessionFromCookieHeader } from "../../../../lib/authSession";
 
-// Define MAX variables
-const MAX_FILE_SIZE = "2GB";
+// Define MAX variables 
+const MAX_FILE_SIZE = "128MB";
 const MAX_TOTAL_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024;
-const MAX_FILE_COUNT = 200;
+const MAX_FILE_COUNT = 100;
 
-// Define allowed file types
+// Define allowed file types sent to UploadThing
 const ALLOWED_FILE_TYPES = new Set([
   "png",
   "mp3",
@@ -20,7 +21,6 @@ const ALLOWED_FILE_TYPES = new Set([
   "rar",
   "zip",
   "csv",
-  "txt",
   "docx",
   "pdf",
 ]);
@@ -47,14 +47,31 @@ export const ourFileRouter = {
     .input(
       // Validate incoming form data
       z.object({
-        title: z.string().max(255).optional(),
-        message: z.string().max(2000).optional(),
-        link: z.string().url().optional(),
-        expiryDate: z
+        title: z
           .string()
-          .regex(/^\d{4}-\d{2}-\d{2}$/) // Accept only YYYY-MM-DD format
+          .trim()
+          .max(255, "Titel mag maximaal 255 tekens bevatten.")
           .optional(),
-        folderName: z.string().max(255).optional(),
+        message: z
+          .string()
+          .trim()
+          .max(2000, "Bericht mag maximaal 2000 tekens bevatten.")
+          .optional(),
+        link: z
+          .string()
+          .trim()
+          .url("De link moet een geldige URL zijn.")
+          .optional(),
+        filePassword: z
+          .string()
+          .trim()
+          .max(255, "Bestandswachtwoord mag maximaal 255 tekens bevatten.")
+          .optional(),
+        folderName: z
+          .string()
+          .trim()
+          .max(255, "Mapnaam mag maximaal 255 tekens bevatten.")
+          .optional(),
       }),
     )
     .middleware(async ({ files, input, req }) => {
@@ -75,7 +92,7 @@ export const ourFileRouter = {
       // Reject oversized uploads
       if (totalUploadBytes > MAX_TOTAL_UPLOAD_BYTES) {
         throw new UploadThingError(
-          "Totale upload is te groot. Maximum is 2GB per upload.",
+          "Totale upload is te groot. Maximum is 128MB per upload.",
         );
       }
 
@@ -89,7 +106,7 @@ export const ourFileRouter = {
         // Reject disallowed file types
         if (!fileExtension || !ALLOWED_FILE_TYPES.has(fileExtension)) {
           throw new UploadThingError(
-            "Bestandstype niet toegestaan. Toegestaan: png, mp3, mp4, rar, zip, csv, txt, docx, pdf.",
+            "Bestandstype niet toegestaan. Toegestaan: png, mp3, mp4, rar, zip, csv, docx, pdf.",
           );
         }
       }
@@ -98,19 +115,24 @@ export const ourFileRouter = {
       const normalizedTitle = normalizeOptionalString(input.title);
       const normalizedMessage = normalizeOptionalString(input.message);
       const normalizedLink = normalizeOptionalString(input.link);
-      const normalizedExpiryDate = normalizeOptionalString(input.expiryDate);
+      const normalizedFilePassword = normalizeOptionalString(
+        input.filePassword,
+      );
+      const normalizedPasswordHashFile = normalizedFilePassword
+        ? await bcrypt.hash(normalizedFilePassword, 10)
+        : "";
       const normalizedFolderName = normalizeOptionalString(input.folderName);
 
       // Create a new transfer record in database
       const [transferInsertResult] = await pool.execute<ResultSetHeader>(
-        `INSERT INTO transfers (UserId, Title, Message, Link, ExpiryDate)
+        `INSERT INTO transfers (UserId, Title, Message, Link, PasswordHashFile)
          VALUES (?, ?, ?, ?, ?)`,
         [
           session.userId,
           normalizedTitle,
           normalizedMessage,
           normalizedLink,
-          normalizedExpiryDate,
+          normalizedPasswordHashFile,
         ],
       );
 

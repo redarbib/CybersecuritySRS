@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
+import { z } from "zod";
 import pool from "../../../../lib/db";
 import {
   AUTH_SESSION_COOKIE,
@@ -12,17 +13,33 @@ type UserRow = {
   Email: string;
   PasswordHash: string;
 };
+const loginRequestSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .email("Please provide a valid email address.")
+    .max(255, "Email can contain at most 255 characters."),
+  password: z
+    .string()
+    .min(1, "Password is required.")
+    .max(255, "Password can contain at most 255 characters."),
+});
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
-
-    if (!email || !password) {
+    const body = await request.json();
+    const parsedRequest = loginRequestSchema.safeParse(body);
+    if (!parsedRequest.success) {
+      const firstIssue = parsedRequest.error.issues[0];
       return NextResponse.json(
-        { message: "Email and password are required.", returnedStatus: 400 },
+        {
+          message: firstIssue?.message ?? "Invalid login request.",
+          returnedStatus: 400,
+        },
         { status: 400 },
       );
     }
+    const { email, password } = parsedRequest.data;
 
     const [rows] = await pool.execute(
       `SELECT Id, Email, PasswordHash
@@ -73,7 +90,7 @@ export async function POST(request: Request) {
     );
 
     return response;
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Login failed. Please try again.", returnedStatus: 500 },
       { status: 500 },

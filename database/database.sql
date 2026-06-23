@@ -15,7 +15,7 @@ CREATE TABLE transfers (
     Title VARCHAR(255),
     Message TEXT,
     Link TEXT,
-    ExpiryDate DATE,
+    PasswordHashFile VARCHAR(255) NOT NULL, 
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (UserId) REFERENCES users(Id)
         ON DELETE CASCADE

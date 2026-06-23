@@ -1,6 +1,8 @@
 "use client";
 import React, { FormEvent, useState } from "react";
 import Link from "next/link";
+const MAX_EMAIL_LENGTH = 255;
+const MAX_PASSWORD_LENGTH = 255;
 
 export default function FormRegister() {
   const [email, setEmail] = useState("");
@@ -11,6 +13,22 @@ export default function FormRegister() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail || !password || !confirmPassword) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    if (normalizedEmail.length > MAX_EMAIL_LENGTH) {
+      setError("Email can contain at most 255 characters.");
+      return;
+    }
+
+    if (password.length > MAX_PASSWORD_LENGTH) {
+      setError("Password can contain at most 255 characters.");
+      return;
+    }
 
     // Validate passwords
     if (password !== confirmPassword) {
@@ -26,7 +44,7 @@ export default function FormRegister() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          email: normalizedEmail,
           password,
         }),
       });
@@ -57,6 +75,7 @@ export default function FormRegister() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
+        maxLength={MAX_EMAIL_LENGTH}
         className="
           w-full
           rounded-lg
@@ -80,6 +99,7 @@ export default function FormRegister() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
+        maxLength={MAX_PASSWORD_LENGTH}
         className="
           w-full
           rounded-lg
@@ -103,6 +123,7 @@ export default function FormRegister() {
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required
+        maxLength={MAX_PASSWORD_LENGTH}
         className="
           w-full
           rounded-lg

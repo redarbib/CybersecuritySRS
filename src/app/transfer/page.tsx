@@ -10,9 +10,12 @@ import Navbar from "../components/ui/navbar";
 
 type FileOverviewRow = {
   Id: number;
+  FileTitle: string;
   FileName: string;
   FileType: string | null;
   FileSize: number | null;
+  FileMessage: string | null;
+  HasFilePassword: boolean;
 };
 
 type MissingFileRow = {
@@ -32,7 +35,6 @@ type DashboardSearchParams = {
 type TransferProps = {
   searchParams?: Promise<DashboardSearchParams> | DashboardSearchParams;
 };
-
 
 function getSingleSearchParam(
   value: string | string[] | undefined,
@@ -111,9 +113,17 @@ export default async function Transfer({ searchParams }: TransferProps) {
       ? await getFilesFromApi(requestedFileToken)
       : { files: [] };
   const selectedFile = files[0];
-  const displayFileName = selectedFile?.FileName ?? "Filenaam.type";
-  const displayFileType = selectedFile?.FileType ?? "Type";
+  const displayFileTitle = selectedFile?.FileTitle ?? "Filetitel";
+  const displayFileName = selectedFile?.FileName ?? "Filenaam";
+  const displayFileMessage = selectedFile?.FileMessage ?? "Filedescription";
+  const displayFileType = selectedFile?.FileType ?? "";
   const displayFileSize = formatFileSize(selectedFile?.FileSize ?? null);
+  const hasFilePassword = Boolean(selectedFile?.HasFilePassword);
+  const passwordStatusText = !selectedFile
+    ? "No files uploaded"
+    : hasFilePassword
+      ? "Password required for download"
+      : "No password set";
 
   const downloadToken =
     selectedFile && fileAccessScope
@@ -132,48 +142,73 @@ export default async function Transfer({ searchParams }: TransferProps) {
           <Navbar />
 
           <h1 className="mt-3 text-xl sm:text-3xl leading-tight">
-            {displayFileName}
+            {displayFileTitle}
           </h1>
+
+          <div className="flex gap-2">
+            <p>{displayFileMessage}</p>
+          </div>
 
           <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div className="rounded p-4 border border-[#d6d6d6] bg-white">
-              <div className="mt-2">
+              <div>
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-xl text-zinc-600 sm:text-2xl leading-tight truncate">
                     {displayFileName}
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <a href={secureDownloadLink} className="inline-flex">
-                      <Image
-                        src="/download.svg"
-                        alt="Download"
-                        width={16}
-                        height={16}
-                      />
-                    </a>
+                    {selectedFile &&
+                      (hasFilePassword ? (
+                        <form
+                          action="/api/download"
+                          method="GET"
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            type="hidden"
+                            name="file"
+                            value={downloadToken ?? ""}
+                          />
+                          <input
+                            type="password"
+                            name="password"
+                            placeholder="File password"
+                            required
+                            maxLength={255}
+                            className="h-8 w-36 rounded border border-zinc-300 px-2 text-sm"
+                          />
+                          <button
+                            type="submit"
+                            className="inline-flex cursor-pointer"
+                          >
+                            <Image
+                              src="/download.svg"
+                              alt="Download"
+                              width={16}
+                              height={16}
+                            />
+                          </button>
+                        </form>
+                      ) : (
+                        <a href={secureDownloadLink} className="inline-flex">
+                          <Image
+                            src="/download.svg"
+                            alt="Download"
+                            width={16}
+                            height={16}
+                          />
+                        </a>
+                      ))}
                   </div>
                 </div>
 
                 <div className="text-sm text-black/65">
                   {displayFileSize} &nbsp; {displayFileType}
                 </div>
-              </div>
-            </div>
-
-            <div className="rounded p-4 border border-[#d6d6d6] bg-white">
-              <div className="text-2xl sm:text-3xl leading-tight">
-                Extra settings
-              </div>
-
-              <div className="mt-2 h-10 flex items-center justify-between text-sm sm:text-base text-black/80">
-                <span>No password set</span>
-                <Image
-                  src="/arrow-down.svg"
-                  alt="Expand settings"
-                  width={16}
-                  height={16}
-                />
+                <div className="mt-2 text-xs text-black/70">
+                  {passwordStatusText}
+                </div>
               </div>
             </div>
           </div>

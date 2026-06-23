@@ -1,6 +1,8 @@
 "use client";
 import { FormEvent, useState } from "react";
 import Link from "next/link";
+const MAX_EMAIL_LENGTH = 255;
+const MAX_PASSWORD_LENGTH = 255;
 
 export default function FormLogin() {
   const [email, setEmail] = useState("");
@@ -15,6 +17,22 @@ export default function FormLogin() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    if (normalizedEmail.length > MAX_EMAIL_LENGTH) {
+      setError("Email can contain at most 255 characters.");
+      return;
+    }
+
+    if (password.length > MAX_PASSWORD_LENGTH) {
+      setError("Password can contain at most 255 characters.");
+      return;
+    }
 
     // Try block for login
     try {
@@ -24,7 +42,7 @@ export default function FormLogin() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
+          email: normalizedEmail,
           password,
         }),
       });
@@ -55,6 +73,7 @@ export default function FormLogin() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
+        maxLength={MAX_EMAIL_LENGTH}
         className="
           w-full
           rounded-lg
@@ -77,6 +96,7 @@ export default function FormLogin() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
+        maxLength={MAX_PASSWORD_LENGTH}
         className="
           w-full
           rounded-lg

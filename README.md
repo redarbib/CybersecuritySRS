@@ -1,154 +1,205 @@
-# Secure File Transfer System
+# Veilige Bestandsoverdracht Systeem
 
-A secure web-based file transfer system developed as a group project to enable safe, encrypted, and efficient sharing of files between users. The system is designed with a strong focus on confidentiality, integrity, authentication, and controlled access to uploaded files.
+Een webgebaseerd systeem voor veilige bestandsoverdracht, ontwikkeld als groepsproject om het veilig, versleuteld en efficiënt delen van bestanden tussen gebruikers mogelijk te maken. Het systeem is ontworpen met een sterke focus op vertrouwelijkheid, integriteit, authenticatie en gecontroleerde toegang tot geüploade bestanden.
 
-## Project Overview
+---
 
-The Secure File Transfer System allows authenticated users to upload and share files securely. Files are transmitted over encrypted connections and stored securely in a cloud-based storage system (UploadThing, backed by AWS S3).
+## Projectoverzicht
 
-The system ensures protection against unauthorized access, file tampering, malware risks, and data interception during transfer.
+Het Veilige Bestandsoverdracht Systeem stelt geauthenticeerde gebruikers in staat om bestanden veilig te uploaden en te delen. Bestanden worden verzonden via versleutelde verbindingen en opgeslagen in een cloudopslagoplossing (UploadThing, ondersteund door AWS S3).
 
-## Target Users
+Het systeem beschermt tegen ongeautoriseerde toegang, bestandsmanipulatie, malware en onderschepping van data tijdens overdracht.
 
-The system is intended for:
+---
 
-- Businesses and organizations exchanging documents, reports, invoices, or datasets
-- Teams sharing internal files between departments or locations
-- Individuals sharing media such as images, videos, and documents
+## Doelgroep
 
-## Supported File Types
+Het systeem is bedoeld voor:
 
-The system only allows safe and predefined file types:
+* Bedrijven en organisaties die documenten, rapporten, facturen of datasets uitwisselen
+* Teams die interne bestanden delen tussen afdelingen of locaties
+* Particulieren die media zoals afbeeldingen, video’s en documenten delen
 
-- PNG
-- MP3
-- MP4
-- RAR
-- ZIP
-- CSV
-- TXT
-- DOCX
-- PDF
+---
 
-This restriction reduces security risks such as malware uploads or unsupported file exploitation.
+## Ondersteunde bestandstypen
 
-## Key Features
+Het systeem staat alleen veilige en vooraf gedefinieerde bestandstypen toe:
 
-### Authentication & Authorization
-- Secure login system
-- Only authenticated users can upload and edit files
-- Middleware-based access control
+* PNG
+* MP3
+* MP4
+* RAR
+* ZIP
+* CSV
+* TXT
+* DOCX
+* PDF
 
-### Secure File Upload
-- Files uploaded via HTTPS using multipart HTTP requests
-- Direct upload to UploadThing (no backend file handling)
-- Server-side validation before upload permission is granted
+Deze beperking vermindert het risico op malwareuploads en misbruik van niet-ondersteunde bestanden.
 
-### Secure Storage
-- Files stored in UploadThing cloud storage (AWS S3-backed)
-- AES-256 encryption at rest (handled by storage provider)
-- Secure URL generation for file access
+---
 
-### File Management
-- Upload files securely
-- Retrieve file URLs from database
-- View an overview of uploaded files
-- Edit file metadata (e.g. filename)
-- Manage and delete uploaded files
-- Track metadata (filename, size, type, owner, upload time)
-- Track whether a file has been downloaded by a recipient
+## Belangrijkste functies
 
-### Integrity & Safety Controls
-- Maximum file size of 2 GB to prevent abuse and server overload
-- Upload status verification via UploadThing response
-- Checksum-based integrity validation to confirm files are uploaded fully and correctly
+### Authenticatie & Autorisatie
 
-### Error Logging
-- Errors occurring during upload, download, or transfer are recorded in an error log
-- Error logs are stored in the database (error type, error message, timestamp) for monitoring and troubleshooting
+* Veilig inlogsysteem
+* Alleen geauthenticeerde gebruikers kunnen bestanden uploaden en bewerken
+* Middleware-gebaseerde toegangscontrole
 
-## Security Architecture
+---
 
-### 1. Encryption
-- **In Transit:** TLS (HTTPS) ensures all data is encrypted during transfer
-- **At Rest:** AES-256 encryption provided by UploadThing / underlying S3 infrastructure
+### Veilige bestandsupload
 
-### 2. Authentication
-- Only logged-in users can upload and edit files
-- Authentication handled via server-side middleware
+* Bestanden worden geüpload via HTTPS met multipart HTTP requests
+* Directe upload naar UploadThing (geen server-side bestandsverwerking)
+* Server-side validatie vóór toestemming voor upload
 
-### 3. Access Control
-- Upload and edit permissions restricted to authenticated users
-- File URLs are controlled and stored securely in database
-- No public direct access without a generated link
+---
 
-### 4. File Validation
-- Allowed file types enforced
-- Maximum file size of 2 GB enforced to prevent DoS-style abuse
-- Upload verification handled via UploadThing response status and checksum integrity checks
+### Veilige opslag
 
-### 5. Threat Protection
-The system is designed to mitigate:
-- Data interception (TLS encryption)
-- File tampering (secure upload pipeline + integrity checks)
-- Unauthorized access (authentication layer)
-- Malware uploads (file type restrictions)
-- Denial of Service attempts (file size limits)
+* Bestanden opgeslagen in UploadThing cloudopslag (AWS S3-gebaseerd)
+* AES-256 encryptie in rust (geleverd door de opslagprovider)
+* Veilige URL-generatie voor bestandsaccess
 
-## Tech Stack
+---
+
+### Bestandsbeheer
+
+* Uploaden van bestanden
+* Ophalen van bestands-URL’s uit de database
+* Overzicht van geüploade bestanden
+* Bewerken van metadata (zoals bestandsnaam)
+* Beheren en verwijderen van bestanden
+* Metadata tracking (naam, grootte, type, eigenaar, uploadtijd)
+* Bijhouden of een bestand is gedownload door een ontvanger
+
+---
+
+### Integriteit & beveiligingscontroles
+
+* Maximale bestandsgrootte van 500 MB ter voorkoming van misbruik en serveroverbelasting
+* Uploadstatuscontrole via UploadThing response
+* Checksum-gebaseerde integriteitsvalidatie om te verzekeren dat bestanden volledig en correct zijn geüpload
+
+---
+
+## Beveiligingsarchitectuur
+
+### 1. Encryptie
+
+* **Tijdens overdracht:** TLS (HTTPS) versleutelt alle data
+* **In rust:** AES-256 encryptie via UploadThing / AWS S3 infrastructuur
+
+---
+
+### 2. Authenticatie
+
+* Alleen ingelogde gebruikers kunnen uploaden en bewerken
+* Authenticatie wordt server-side afgehandeld via middleware
+
+---
+
+### 3. Toegangscontrole
+
+* Upload- en bewerkrechten alleen voor geauthenticeerde gebruikers
+* Bestandslinks worden gecontroleerd en veilig opgeslagen in de database
+* Geen directe publieke toegang zonder gegenereerde link
+
+---
+
+### 4. Bestandsvalidatie
+
+* Alleen toegestane bestandstypen
+* Maximale bestandsgrootte van 500 MB
+* Uploadvalidatie via UploadThing response en checksumcontrole
+
+---
+
+### 5. Bescherming tegen bedreigingen
+
+Het systeem is ontworpen om de volgende risico’s te beperken:
+
+* Data onderschepping (TLS encryptie)
+* Bestandsmanipulatie (veilige upload pipeline + integriteitscontroles)
+* Ongeautoriseerde toegang (authenticatielaag)
+* Malware uploads (file type restricties)
+* Denial of Service aanvallen (bestandsgrootte limieten)
+
+---
+
+## Tech stack
 
 ### Frontend
-- Next.js (App Router)
-- TypeScript
-- React
-- Tailwind CSS
+
+* Next.js (App Router)
+* TypeScript
+* React
+* Tailwind CSS
+
+---
 
 ### Backend
-- Next.js API Routes (full-stack architecture)
-- Node.js runtime
 
-### Storage
-- UploadThing (cloud file storage)
-- AWS S3 (backend infrastructure used by UploadThing)
+* Next.js API Routes (full-stack architectuur)
+* Node.js runtime
 
-### Security Technologies
-- HTTPS / TLS encryption
-- AES-256 encryption at rest (provider-level)
-- Middleware-based authentication
-- Secure file upload validation
+---
 
-## System Architecture
+### Opslag
 
-The system uses a server-assisted upload authorization model:
+* UploadThing (cloud file storage)
+* AWS S3 (onderliggende infrastructuur)
 
-1. User logs in via frontend
-2. Server validates authentication and authorization
-3. Server generates a temporary, presigned upload URL for UploadThing
-4. File is uploaded directly from client → UploadThing via the presigned URL
-5. UploadThing stores the file securely (encrypted at rest) and returns a confirmation/result
-6. File metadata + URL stored in database, linked to the user's account
-7. User retrieves the file via a secure link; recipients can download via this link and download status is tracked
+---
 
-This design ensures the backend never directly handles file contents, improving scalability and security.
+### Beveiligingstechnologieën
 
-## Installation
+* HTTPS / TLS encryptie
+* AES-256 encryptie in rust
+* Middleware-gebaseerde authenticatie
+* Veilige uploadvalidatie
 
-Clone the repository:
+---
+
+## Systeemarchitectuur
+
+Het systeem gebruikt een server-assisted upload model:
+
+1. Gebruiker logt in via frontend
+2. Server valideert authenticatie en autorisatie
+3. Server genereert een tijdelijke uploadtoegang (presigned URL) voor UploadThing
+4. Bestand wordt direct client → UploadThing geüpload
+5. UploadThing slaat het bestand veilig op en retourneert bevestiging
+6. Metadata + URL worden opgeslagen in de database
+7. Gebruiker kan het bestand ophalen via een beveiligde link; downloads worden bijgehouden
+
+Dit ontwerp zorgt ervoor dat de backend geen bestanden direct verwerkt, wat schaalbaarheid en veiligheid verbetert.
+
+---
+
+## Installatie
+
+Repository clonen:
 
 ```
 git clone https://github.com/redarbib/CybersecuritySRS
 cd CybersecuritySRS
 ```
 
-Install dependencies:
+Dependencies installeren:
 
 ```
 npm install
 ```
 
-## Getting Started
+---
 
-Run the development server:
+## Starten van het project
+
+Development server starten:
 
 ```
 npm run dev
@@ -160,11 +211,13 @@ Open:
 http://localhost:3000
 ```
 
-The application auto-reloads during development.
+De applicatie herlaadt automatisch tijdens development.
 
-## Environment Variables
+---
 
-Create a `.env.local` file:
+## Omgevingsvariabelen
+
+Maak een `.env.local` bestand aan:
 
 ```
 DB_HOST=
@@ -174,69 +227,73 @@ DB_USER=
 DB_NAME=
 ```
 
-## Project Structure
+---
+
+## Projectstructuur
 
 ```
 secure-file-transfer-system/
 │
-├── src/              # Pages and routing (Next.js App Router)
-├── components/      # UI components
-├── lib/             # Utility functions
-├── services/        # Upload & security logic
-├── database/        # Database schema/models
-├── public/          # Static assets
+├── src/              # Pages en routing (Next.js App Router)
+├── components/      # UI componenten
+├── lib/             # Utility functies
+├── services/       # Upload & security logica
+├── database/       # Database schema/modellen
+├── public/         # Statische assets
 └── README.md
 ```
 
-## Security Requirements Mapping
+---
 
-- **Encrypted Uploads:** HTTPS/TLS enforced
-- **Encrypted Storage:** AES-256 (UploadThing/S3)
-- **Authentication:** Required for uploads and edits
-- **File Type Restrictions:** Strict whitelist enforced
-- **File Size Limits:** Maximum of 2 GB to prevent abuse and overload
-- **Integrity Checks:** Upload status verification + checksum validation
+## Mapping van security requirements
 
-## Status van Functionaliteiten
+* **Versleutelde uploads:** HTTPS/TLS
+* **Versleutelde opslag:** AES-256 (UploadThing/S3)
+* **Authenticatie:** verplicht voor upload en bewerken
+* **Bestandstype restricties:** strikte whitelist
+* **Bestandsgrootte limiet:** max 500 MB
+* **Integriteitscontrole:** uploadstatus + checksum validatie
 
-### Functies
+---
 
-De volgende onderdelen van het systeem zijn volledig afgerond en werken correct:
+## Status van functionaliteiten
 
-- Uploadfunctie voor bestanden  
-- Downloadfunctie met server-side controle of het bestand bestaat  
-- Bestandsvalidatie  
-  - Alleen toegestane bestandstypes kunnen worden geüpload  
-  - Maximale bestandsgrootte is ingesteld  
-- Basisbeveiliging bij upload en download  
-- Opslaan van bestandsmetadata in de database  
-- Login- en registratiesysteem 
-- Dashboard  
-- Upload naar UploadThing (cloud storage)  
+De volgende onderdelen zijn volledig afgerond en werken correct:
+
+* Uploadfunctie voor bestanden
+* Downloadfunctie met server-side controle
+* Bestandsvalidatie (type + grootte)
+* Basisbeveiliging bij upload en download
+* Opslaan van metadata in database
+* Login- en registratiesysteem
+* Dashboard
+* Upload naar UploadThing (cloud storage)
+
 ---
 
 ## Testing
 
-Run tests:
+Tests uitvoeren:
 
 ```
 npm test
 ```
 
-Test coverage includes:
+Testdekking omvat:
 
-- Authentication validation
-- File upload restrictions
-- Security rule enforcement
-- Upload integrity checks
-- Error logging behavior
+* Authenticatievalidatie
+* Uploadrestricties
+* Beveiligingsregels
+* Integriteitscontroles
+
+---
 
 ## Deployment
 
-Supported platforms:
+Ondersteunde platformen:
 
-- Vercel (recommended for Next.js)
-- AWS
+* Vercel
+* AWS
 
 Production build:
 
@@ -245,13 +302,17 @@ npm run build
 npm start
 ```
 
-## Repository and Planning
+---
 
-- **GitHub:** https://github.com/redarbib/CybersecuritySRS
-- **Trello:** https://trello.com/b/AQiKb9B6/cybersecurity-srs
+## Repository en planning
 
-## Team Members
+* **GitHub:** [https://github.com/redarbib/CybersecuritySRS](https://github.com/redarbib/CybersecuritySRS)
+* **Trello:** [https://trello.com/b/AQiKb9B6/cybersecurity-srs](https://trello.com/b/AQiKb9B6/cybersecurity-srs)
 
-- Strahinja Zoranovic
-- Saleh Saleh
-- Reda Rbib
+---
+
+## Teamleden
+
+* Strahinja Zoranovic
+* Saleh Saleh
+* Reda Rbib
