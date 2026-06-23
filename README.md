@@ -32,7 +32,6 @@ Het systeem staat alleen veilige en vooraf gedefinieerde bestandstypen toe:
 * RAR
 * ZIP
 * CSV
-* TXT
 * DOCX
 * PDF
 
@@ -80,7 +79,7 @@ Deze beperking vermindert het risico op malwareuploads en misbruik van niet-onde
 
 ### Integriteit & beveiligingscontroles
 
-* Maximale bestandsgrootte van 500 MB ter voorkoming van misbruik en serveroverbelasting
+* Maximale bestandsgrootte van 128 MB ter voorkoming van misbruik en serveroverbelasting
 * Uploadstatuscontrole via UploadThing response
 * Checksum-gebaseerde integriteitsvalidatie om te verzekeren dat bestanden volledig en correct zijn geüpload
 
@@ -151,7 +150,6 @@ Het systeem is ontworpen om de volgende risico’s te beperken:
 ### Opslag
 
 * UploadThing (cloud file storage)
-* AWS S3 (onderliggende infrastructuur)
 
 ---
 
@@ -217,7 +215,7 @@ De applicatie herlaadt automatisch tijdens development.
 
 ## Omgevingsvariabelen
 
-Maak een `.env.local` bestand aan:
+Maak een `.env` bestand aan:
 
 ```
 DB_HOST=
@@ -225,6 +223,10 @@ DB_PASSWORD=
 DB_PORT=
 DB_USER=
 DB_NAME=
+FILE_ACCESS_SECRET=
+SESSION_SECRET=
+SECRET_CODE=
+UPLOADTHING_TOKEN=
 ```
 
 ---
@@ -251,7 +253,7 @@ secure-file-transfer-system/
 * **Versleutelde opslag:** AES-256 (UploadThing/S3)
 * **Authenticatie:** verplicht voor upload en bewerken
 * **Bestandstype restricties:** strikte whitelist
-* **Bestandsgrootte limiet:** max 500 MB
+* **Bestandsgrootte limiet:** max 128 MB
 * **Integriteitscontrole:** uploadstatus + checksum validatie
 
 ---
@@ -308,6 +310,7 @@ npm start
 
 * **GitHub:** [https://github.com/redarbib/CybersecuritySRS](https://github.com/redarbib/CybersecuritySRS)
 * **Trello:** [https://trello.com/b/AQiKb9B6/cybersecurity-srs](https://trello.com/b/AQiKb9B6/cybersecurity-srs)
+* **Figma:** [https://www.figma.com/design/5TLruobrWPr4XdPVYHDGTs/Cybersecurity-SRS?node-id=0-1&p=f&t=fXxjewbScdldj9MU-0](https://www.figma.com/design/5TLruobrWPr4XdPVYHDGTs/Cybersecurity-SRS?node-id=0-1&p=f&t=fXxjewbScdldj9MU-0)
 
 ---
 
