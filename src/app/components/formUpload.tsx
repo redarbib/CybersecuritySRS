@@ -16,11 +16,6 @@ type AuthResponse = {
 
 // Define max upload in bytes which is 128MB
 const MAX_TOTAL_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024;
-const MAX_TITLE_LENGTH = 50;
-const MAX_MESSAGE_LENGTH = 100;
-const MAX_FILE_PASSWORD_LENGTH = 255;
-const MAX_EMAIL_LENGTH = 255;
-const MAX_PASSWORD_LENGTH = 255;
 
 // Define default error message
 const DEFAULT_UPLOAD_ERROR_MESSAGE = "Upload mislukt. Probeer het opnieuw.";
@@ -40,7 +35,7 @@ const ALLOWED_FILE_TYPES = new Set([
 // Define allowed file types label
 const ALLOWED_FILE_TYPES_LABEL = "png, mp3, mp4, rar, zip, csv, docx, pdf";
 
-type FormLandingProps = {
+type FormUploadProps = {
   isLoggedIn: boolean;
 };
 
@@ -134,7 +129,7 @@ function getFirstDisallowedFile(files: File[]): File | null {
   );
 }
 
-export default function FormLanding({ isLoggedIn }: FormLandingProps) {
+export default function FormUpload({ isLoggedIn }: FormUploadProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedFolderName, setSelectedFolderName] = useState<string | null>(
     null,
@@ -280,36 +275,6 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
       return;
     }
 
-    if (!isLoggedIn && email && email.length > MAX_EMAIL_LENGTH) {
-      setStatusType("error");
-      setStatusMessage("Email mag maximaal 255 tekens bevatten.");
-      return;
-    }
-
-    if (!isLoggedIn && password && password.length > MAX_PASSWORD_LENGTH) {
-      setStatusType("error");
-      setStatusMessage("Wachtwoord mag maximaal 255 tekens bevatten.");
-      return;
-    }
-
-    if (title && title.length > MAX_TITLE_LENGTH) {
-      setStatusType("error");
-      setStatusMessage("Titel mag maximaal 50 tekens bevatten.");
-      return;
-    }
-
-    if (message && message.length > MAX_MESSAGE_LENGTH) {
-      setStatusType("error");
-      setStatusMessage("Bericht mag maximaal 100 tekens bevatten.");
-      return;
-    }
-
-    if (filePassword && filePassword.length > MAX_FILE_PASSWORD_LENGTH) {
-      setStatusType("error");
-      setStatusMessage("Bestandswachtwoord mag maximaal 100 tekens bevatten.");
-      return;
-    }
-
     // If an user is not logged in send him to the register route
     try {
       if (!isLoggedIn) {
@@ -444,7 +409,7 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
                 name="email"
                 placeholder="Your email"
                 required
-                maxLength={MAX_EMAIL_LENGTH}
+                maxLength={255}
                 className={inputClass}
               />
               <input
@@ -452,7 +417,8 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
                 name="password"
                 placeholder="Password"
                 required
-                maxLength={MAX_PASSWORD_LENGTH}
+                minLength={8}
+                maxLength={100}
                 className={inputClass}
               />
             </>
@@ -461,21 +427,24 @@ export default function FormLanding({ isLoggedIn }: FormLandingProps) {
             type="text"
             name="title"
             placeholder="Title"
-            maxLength={MAX_TITLE_LENGTH}
+            minLength={3}
+            maxLength={100}
             className={inputClass}
           />
           <input
             type="text"
             name="message"
             placeholder="Message"
-            maxLength={MAX_MESSAGE_LENGTH}
+            minLength={5}
+            maxLength={255}
             className={inputClass}
           />
           <input
             type="password"
             name="filePassword"
             placeholder="File password (optional)"
-            maxLength={MAX_FILE_PASSWORD_LENGTH}
+            minLength={8}
+            maxLength={100}
             className={inputClass}
           />
         </div>

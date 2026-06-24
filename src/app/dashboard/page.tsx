@@ -1,6 +1,6 @@
 import "../globals.css";
 import DashboardCard from "../components/dashboardCard";
-import FormLanding from "../components/formUpload";
+import FormUpload from "../components/formUpload";
 import { getSessionFromServerCookies } from "../../../lib/authSession";
 type DashboardSearchParams = {
   q?: string | string[];
@@ -31,7 +31,7 @@ export default async function DashboardPage({
     <main className="flex min-h-screen w-full">
       <section className="flex min-h-screen w-1/2 items-center justify-center">
         <div className="w-full">
-          <FormLanding isLoggedIn={Boolean(session)} />
+          <FormUpload isLoggedIn={Boolean(session)} />
         </div>
       </section>
 

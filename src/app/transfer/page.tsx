@@ -4,9 +4,10 @@ import {
   createFileAccessToken,
   getFileAccessFromToken,
 } from "../../../lib/fileAccessToken";
-import FormLanding from "../components/formUpload";
+import FormUpload from "../components/formUpload";
 import { getSessionFromServerCookies } from "../../../lib/authSession";
 import Navbar from "../components/ui/navbar";
+import CopyPageLinkButton from "../components/ui/copyLinkButton";
 
 type FileOverviewRow = {
   Id: number;
@@ -135,18 +136,21 @@ export default async function Transfer({ searchParams }: TransferProps) {
 
   return (
     <main className="min-h-screen grid grid-cols-1 lg:grid-cols-[50%_50%]">
-      <FormLanding isLoggedIn={Boolean(session)} />
+      <FormUpload isLoggedIn={Boolean(session)} />
 
       <section className="bg-[#efefef] text-black p-6">
         <div className="mx-auto max-w-[760px]">
           <Navbar />
 
-          <h1 className="mt-3 text-xl sm:text-3xl leading-tight">
-            {displayFileTitle}
-          </h1>
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <h1 className="text-xl sm:text-3xl leading-tight">
+              {displayFileTitle}
+            </h1>
+          </div>
 
           <div className="flex gap-2">
             <p>{displayFileMessage}</p>
+            <CopyPageLinkButton />
           </div>
 
           <div className="mt-3 grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -175,6 +179,7 @@ export default async function Transfer({ searchParams }: TransferProps) {
                             name="password"
                             placeholder="File password"
                             required
+                            minLength={5}
                             maxLength={255}
                             className="h-8 w-36 rounded border border-zinc-300 px-2 text-sm"
                           />
@@ -206,7 +211,7 @@ export default async function Transfer({ searchParams }: TransferProps) {
                 <div className="text-sm text-black/65">
                   {displayFileSize} &nbsp; {displayFileType}
                 </div>
-                <div className="mt-2 text-xs text-black/70">
+                <div className="mt-1 text-xs text-black/70">
                   {passwordStatusText}
                 </div>
               </div>

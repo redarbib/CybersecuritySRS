@@ -6,6 +6,7 @@ import pool from "../../../lib/db";
 import { createFileAccessToken } from "../../../lib/fileAccessToken";
 import { getSessionFromServerCookies } from "../../../lib/authSession";
 import Navbar from "./ui/navbar";
+import { redirect } from "next/navigation";
 
 type DashboardCardProps = {
   email: string | null;
@@ -21,7 +22,9 @@ type DashboardFileRow = RowDataPacket & {
   FileType: string | null;
   FileSize: number | null;
 };
-const MAX_DASHBOARD_SEARCH_LENGTH = 255;
+
+// Define search bar lenght
+const MAX_DASHBOARD_SEARCH_LENGTH = 100;
 
 function formatFileSize(size: number | null): string {
   // If the file is false or less than 0 return Unknown
@@ -47,13 +50,8 @@ const DashboardCard = async ({
   userId,
   searchQuery,
 }: DashboardCardProps) => {
-  // If the email or userId is missing return this page, but if these are true show the other page found below
   if (!email || !userId) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p>Not logged in</p>
-      </div>
-    );
+    redirect("/login");
   }
 
   const normalizedSearchQuery = searchQuery

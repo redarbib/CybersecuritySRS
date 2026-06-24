@@ -1,5 +1,5 @@
 import Navbar from "./components/ui/navbar";
-import FormLanding from "./components/formUpload";
+import FormUpload from "./components/formUpload";
 import { getSessionFromServerCookies } from "../../lib/authSession";
 
 export default async function UploadFilePage() {
@@ -12,7 +12,7 @@ export default async function UploadFilePage() {
 
       <div className="flex flex-1 items-center gap-12 px-12 overflow-hidden">
         <div className="w-1/2 flex justify-center items-center">
-          <FormLanding isLoggedIn={Boolean(session)} />
+          <FormUpload isLoggedIn={Boolean(session)} />
         </div>
 
         <div className="w-1/2 flex justify-center items-center">
