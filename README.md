@@ -191,7 +191,13 @@ Dependencies installeren:
 
 ```
 npm install
+npm install uploadthing @uploadthing/react
+
 ```
+
+UploadThing opzetten:
+
+Maak een account aan bij UploadThing. Nadat je bent ingelogd, maak je een nieuw project aan. Vervolgens krijg je een API-key die je nodig hebt om UploadThing met je applicatie te verbinden. Deze API-key plaats je in `.env`-bestand, nadat je dit hebt gedaan herstart de development server. Als alles correct is ingesteld, werkt UploadThing en kunnen bestanden succesvol worden geüpload.
 
 ---
 
@@ -210,8 +216,9 @@ http://localhost:3000
 ```
 
 De applicatie herlaadt automatisch tijdens development.
-
+ 
 ---
+
 
 ## Omgevingsvariabelen
 
@@ -270,23 +277,6 @@ De volgende onderdelen zijn volledig afgerond en werken correct:
 * Login- en registratiesysteem
 * Dashboard
 * Upload naar UploadThing (cloud storage)
-
----
-
-## Testing
-
-Tests uitvoeren:
-
-```
-npm test
-```
-
-Testdekking omvat:
-
-* Authenticatievalidatie
-* Uploadrestricties
-* Beveiligingsregels
-* Integriteitscontroles
 
 ---
 
