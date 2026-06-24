@@ -192,7 +192,7 @@ Dependencies installeren:
 ```
 npm install
 npm install uploadthing @uploadthing/react
-
+npm install mysql2 --save
 ```
 
 UploadThing opzetten:
