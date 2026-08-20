@@ -305,8 +305,8 @@ npm start
 
 ---
 
-## Team Members
+## Team members
 
-* Strahinja Zoranovic
-* Saleh Saleh
-* Reda Rbib
+* [Strahinja Zoranovic](https://github.com/strahinjazoranovic)
+* [Reda Rbib](https://github.com/redarbib)
+* [Saleh Saleh](https://github.com/salehn12)
